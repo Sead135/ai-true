@@ -20,11 +20,14 @@ cp .env.example .env
 cp frontend/.env.example frontend/.env.local
 
 npm run docker:up
-npm run db:migrate          # когда появятся schema-миграции
+npm run db:migrate
+npm run db:seed             # 2 компании · 3 филиала · admin + client
 
 npm run dev:backend         # :3000 · Swagger /docs
 npm run dev:frontend        # :3001
 ```
+
+Тестовые логины (пароль `password123`): `admin@ii.local` (все компании), `client@severny.local` (только «Северный Вкус»).
 
 ## Прокси
 
@@ -43,4 +46,4 @@ Drizzle подключён через `DatabaseModule`. Auth: httpOnly cookies +
 
 ## Скрипты
 
-`dev:backend` · `dev:frontend` · `docker:up/down` · `db:migrate` · `lint` · `fmt`
+`dev:backend` · `dev:frontend` · `docker:up/down` · `db:migrate` · `db:seed` · `lint` · `fmt`

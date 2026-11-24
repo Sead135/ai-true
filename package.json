@@ -7,6 +7,7 @@
     "docker:up": "npm run docker:up --prefix backend",
     "docker:down": "npm run docker:down --prefix backend",
     "db:migrate": "npm run db:migrate --prefix backend",
+    "db:seed": "npm run db:seed --prefix backend",
     "lint": "oxlint",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
