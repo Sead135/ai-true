@@ -1,0 +1,18 @@
+{
+  "name": "ii-test",
+  "private": true,
+  "scripts": {
+    "dev:backend": "npm run start:dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "docker:up": "npm run docker:up --prefix backend",
+    "docker:down": "npm run docker:down --prefix backend",
+    "db:migrate": "npm run db:migrate --prefix backend",
+    "lint": "oxlint",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.80.0",
+    "oxlint": "^1.95.0"
+  }
+}
