@@ -32,7 +32,9 @@ async function seed() {
   const { db, pool } = createDb();
 
   try {
-    await db.execute(sql`TRUNCATE TABLE reviews, daily_metrics, users, branches, companies CASCADE`);
+    await db.execute(
+      sql`TRUNCATE TABLE reviews, daily_metrics, users, branches, companies CASCADE`,
+    );
 
     await db.insert(companies).values([
       {

@@ -1,19 +1,18 @@
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { JwtService, type JwtSignOptions } from "@nestjs/jwt";
-import { compare } from "bcrypt";
+import { JwtService } from "@nestjs/jwt";
+import { compare, hash } from "bcrypt";
 import { eq } from "drizzle-orm";
 import type { IssuedTokens } from "./auth-cookies";
 import type { AccessTokenPayload, RefreshTokenPayload } from "./auth.types";
+import { jwtTtl } from "./jwt-ttl";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
 import { users, type User } from "../database/schema/index";
 
 type Db = ReturnType<typeof createDb>["db"];
 
-function jwtTtl(value: string | undefined, fallback: string): JwtSignOptions["expiresIn"] {
-  return (value ?? fallback) as JwtSignOptions["expiresIn"];
-}
+const BCRYPT_ROUNDS = 10;
 
 @Injectable()
 export class AuthService {
@@ -31,6 +30,27 @@ export class AuthService {
     if (!user || !(await compare(password, user.passwordHash))) {
       throw new UnauthorizedException("Invalid credentials");
     }
+
+    return this.issueTokens(user);
+  }
+
+  async register(email: string, password: string): Promise<IssuedTokens> {
+    const existing = await this.db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+    if (existing) {
+      throw new ConflictException("Email already registered");
+    }
+
+    const [user] = await this.db
+      .insert(users)
+      .values({
+        email,
+        passwordHash: await hash(password, BCRYPT_ROUNDS),
+        role: "client",
+        companyId: null,
+      })
+      .returning();
 
     return this.issueTokens(user);
   }

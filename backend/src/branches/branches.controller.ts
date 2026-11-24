@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -24,10 +25,7 @@ export class BranchesController {
   @Roles("client")
   @ApiCreatedResponse({ type: BranchDto })
   @ApiForbiddenResponse({ description: "Admin cannot create branches" })
-  create(
-    @Req() req: AuthenticatedRequest,
-    @Body() body: CreateBranchDto,
-  ): Promise<BranchDto> {
+  create(@Req() req: AuthenticatedRequest, @Body() body: CreateBranchDto): Promise<BranchDto> {
     return this.branches.create(req.user, body);
   }
 
@@ -36,5 +34,14 @@ export class BranchesController {
   @ApiOkResponse({ type: BranchDto, isArray: true })
   list(@Req() req: AuthenticatedRequest): Promise<BranchDto[]> {
     return this.branches.list(req.user);
+  }
+
+  @Get(":id")
+  @Roles("admin", "client")
+  @ApiOkResponse({ type: BranchDto })
+  @ApiForbiddenResponse({ description: "Branch is outside your scope" })
+  @ApiNotFoundResponse({ description: "Branch not found" })
+  getOne(@Req() req: AuthenticatedRequest, @Param("id") id: string): Promise<BranchDto> {
+    return this.branches.getForActor(req.user, id);
   }
 }

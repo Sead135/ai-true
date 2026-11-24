@@ -1,20 +1,8 @@
 import { Injectable } from "@nestjs/common";
+import { eachDate } from "../common/dates";
+import { between, hash } from "../common/mock-hash";
 import { mockReviewsForDay } from "../reviews/mock-reviews-source";
 import type { DailyStatsRow, StatsSource } from "./stats-source";
-
-/** Stable 32-bit hash so seed/re-sync stays reproducible. */
-function hash(input: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < input.length; i++) {
-    h ^= input.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
-function between(h: number, min: number, max: number): number {
-  return min + (h % (max - min + 1));
-}
 
 export function mockDay(branchId: string, date: string): DailyStatsRow {
   const h = hash(`${branchId}:${date}`);
@@ -35,17 +23,6 @@ export function mockDay(branchId: string, date: string): DailyStatsRow {
     avgRating,
     reviewsCount,
   };
-}
-
-function eachDate(from: string, to: string): string[] {
-  const out: string[] = [];
-  const cur = new Date(`${from}T00:00:00.000Z`);
-  const end = new Date(`${to}T00:00:00.000Z`);
-  while (cur <= end) {
-    out.push(cur.toISOString().slice(0, 10));
-    cur.setUTCDate(cur.getUTCDate() + 1);
-  }
-  return out;
 }
 
 @Injectable()

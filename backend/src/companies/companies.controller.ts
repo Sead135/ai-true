@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -24,10 +25,7 @@ export class CompaniesController {
   @Roles("client")
   @ApiCreatedResponse({ type: CompanyDto })
   @ApiForbiddenResponse({ description: "Admin cannot create companies" })
-  create(
-    @Req() req: AuthenticatedRequest,
-    @Body() body: CreateCompanyDto,
-  ): Promise<CompanyDto> {
+  create(@Req() req: AuthenticatedRequest, @Body() body: CreateCompanyDto): Promise<CompanyDto> {
     return this.companies.create(req.user, body);
   }
 
@@ -36,5 +34,14 @@ export class CompaniesController {
   @ApiOkResponse({ type: CompanyDto, isArray: true })
   list(@Req() req: AuthenticatedRequest): Promise<CompanyDto[]> {
     return this.companies.list(req.user);
+  }
+
+  @Get(":id")
+  @Roles("admin", "client")
+  @ApiOkResponse({ type: CompanyDto })
+  @ApiForbiddenResponse({ description: "Company is outside your scope" })
+  @ApiNotFoundResponse({ description: "Company not found" })
+  getOne(@Req() req: AuthenticatedRequest, @Param("id") id: string): Promise<CompanyDto> {
+    return this.companies.getForActor(req.user, id);
   }
 }

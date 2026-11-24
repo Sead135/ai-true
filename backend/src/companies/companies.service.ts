@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
+import { requireUser } from "../database/require-user";
 import { companies, users, type Company } from "../database/schema/index";
 import type { CreateCompanyDto } from "./dto/create-company.dto";
 
@@ -19,7 +20,7 @@ export class CompaniesService {
   constructor(@Inject(DRIZZLE) private readonly db: Db) {}
 
   async create(actor: AccessTokenPayload, dto: CreateCompanyDto): Promise<Company> {
-    const user = await this.requireUser(actor.sub);
+    const user = await requireUser(this.db, actor.sub);
     if (user.role !== "client") {
       throw new ForbiddenException("Only clients can create companies");
     }
@@ -52,7 +53,7 @@ export class CompaniesService {
       return this.db.select().from(companies);
     }
 
-    const user = await this.requireUser(actor.sub);
+    const user = await requireUser(this.db, actor.sub);
     if (!user.companyId) {
       return [];
     }
@@ -75,20 +76,10 @@ export class CompaniesService {
       return company;
     }
 
-    const user = await this.requireUser(actor.sub);
+    const user = await requireUser(this.db, actor.sub);
     if (user.companyId !== company.id) {
       throw new ForbiddenException("Company is outside your scope");
     }
     return company;
-  }
-
-  private async requireUser(userId: string) {
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.id, userId),
-    });
-    if (!user) {
-      throw new NotFoundException("User not found");
-    }
-    return user;
   }
 }

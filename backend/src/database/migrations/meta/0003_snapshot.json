@@ -90,12 +90,8 @@
           "name": "branches_company_id_companies_id_fk",
           "tableFrom": "branches",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -252,12 +248,8 @@
           "name": "daily_metrics_branch_id_branches_id_fk",
           "tableFrom": "daily_metrics",
           "tableTo": "branches",
-          "columnsFrom": [
-            "branch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["branch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -267,10 +259,7 @@
         "daily_metrics_branch_date_uq": {
           "name": "daily_metrics_branch_date_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "branch_id",
-            "date"
-          ]
+          "columns": ["branch_id", "date"]
         }
       },
       "policies": {},
@@ -346,12 +335,8 @@
           "name": "reviews_branch_id_branches_id_fk",
           "tableFrom": "reviews",
           "tableTo": "branches",
-          "columnsFrom": [
-            "branch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["branch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -361,10 +346,7 @@
         "reviews_branch_mock_key_uq": {
           "name": "reviews_branch_mock_key_uq",
           "nullsNotDistinct": false,
-          "columns": [
-            "branch_id",
-            "mock_key"
-          ]
+          "columns": ["branch_id", "mock_key"]
         }
       },
       "policies": {},
@@ -421,12 +403,8 @@
           "name": "users_company_id_companies_id_fk",
           "tableFrom": "users",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -436,9 +414,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -450,18 +426,12 @@
     "public.review_status": {
       "name": "review_status",
       "schema": "public",
-      "values": [
-        "new",
-        "processed"
-      ]
+      "values": ["new", "processed"]
     },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "client"
-      ]
+      "values": ["admin", "client"]
     }
   },
   "schemas": {},

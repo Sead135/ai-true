@@ -1,4 +1,6 @@
 import { Injectable } from "@nestjs/common";
+import { eachDate } from "../common/dates";
+import { between, hash } from "../common/mock-hash";
 import type { ReviewRow, ReviewsSource, ReviewStatus } from "./reviews-source";
 
 const AUTHORS = [
@@ -23,30 +25,6 @@ const TEXTS = [
   "Были проблемы с записью, в остальном ок.",
 ];
 
-function hash(input: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < input.length; i++) {
-    h ^= input.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
-function between(h: number, min: number, max: number): number {
-  return min + (h % (max - min + 1));
-}
-
-function eachDate(from: string, to: string): string[] {
-  const out: string[] = [];
-  const cur = new Date(`${from}T00:00:00.000Z`);
-  const end = new Date(`${to}T00:00:00.000Z`);
-  while (cur <= end) {
-    out.push(cur.toISOString().slice(0, 10));
-    cur.setUTCDate(cur.getUTCDate() + 1);
-  }
-  return out;
-}
-
 export function mockReviewsForDay(branchId: string, date: string): ReviewRow[] {
   const dayHash = hash(`${branchId}:${date}:reviews`);
   const count = between(dayHash, 0, 3);
@@ -65,7 +43,9 @@ export function mockReviewsForDay(branchId: string, date: string): ReviewRow[] {
       text: TEXTS[between(h >>> 16, 0, TEXTS.length - 1)]!,
       authorName: AUTHORS[between(h >>> 20, 0, AUTHORS.length - 1)]!,
       status,
-      reviewedOn: new Date(`${date}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00.000Z`),
+      reviewedOn: new Date(
+        `${date}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00.000Z`,
+      ),
       mockKey: `${date}:${i}`,
     });
   }

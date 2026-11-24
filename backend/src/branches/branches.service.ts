@@ -10,7 +10,8 @@ import type { AccessTokenPayload } from "../auth/auth.types";
 import { CompaniesService } from "../companies/companies.service";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
-import { branches, users, type Branch } from "../database/schema/index";
+import { requireUser } from "../database/require-user";
+import { branches, type Branch } from "../database/schema/index";
 import type { CreateBranchDto } from "./dto/create-branch.dto";
 
 type Db = ReturnType<typeof createDb>["db"];
@@ -27,7 +28,7 @@ export class BranchesService {
       throw new ForbiddenException("Only clients can create branches");
     }
 
-    const user = await this.requireUser(actor.sub);
+    const user = await requireUser(this.db, actor.sub);
     if (!user.companyId) {
       throw new BadRequestException("Create a company before adding branches");
     }
@@ -61,7 +62,7 @@ export class BranchesService {
       return this.db.select().from(branches);
     }
 
-    const user = await this.requireUser(actor.sub);
+    const user = await requireUser(this.db, actor.sub);
     if (!user.companyId) {
       return [];
     }
@@ -70,7 +71,11 @@ export class BranchesService {
   }
 
   async getForActor(actor: AccessTokenPayload, branchId: string): Promise<Branch> {
-    const [branch] = await this.db.select().from(branches).where(eq(branches.id, branchId)).limit(1);
+    const [branch] = await this.db
+      .select()
+      .from(branches)
+      .where(eq(branches.id, branchId))
+      .limit(1);
 
     if (!branch) {
       throw new NotFoundException("Branch not found");
@@ -80,7 +85,7 @@ export class BranchesService {
       return branch;
     }
 
-    const user = await this.requireUser(actor.sub);
+    const user = await requireUser(this.db, actor.sub);
     if (!user.companyId || user.companyId !== branch.companyId) {
       throw new ForbiddenException("Branch is outside your scope");
     }
@@ -88,13 +93,12 @@ export class BranchesService {
     return branch;
   }
 
-  private async requireUser(userId: string) {
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.id, userId),
-    });
-    if (!user) {
-      throw new NotFoundException("User not found");
+  /** Resolve one branch (scoped) or all branches visible to actor. */
+  async idsForActor(actor: AccessTokenPayload, branchId?: string): Promise<string[]> {
+    if (branchId) {
+      const branch = await this.getForActor(actor, branchId);
+      return [branch.id];
     }
-    return user;
+    return (await this.list(actor)).map((b) => b.id);
   }
 }

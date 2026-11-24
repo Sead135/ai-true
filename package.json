@@ -10,9 +10,12 @@
     "db:seed": "npm run db:seed --prefix backend",
     "lint": "oxlint",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "test": "npm test --prefix backend",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
+    "lefthook": "^2.2.2",
     "oxfmt": "^0.80.0",
     "oxlint": "^1.95.0"
   }

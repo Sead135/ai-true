@@ -29,6 +29,10 @@ npm run dev:frontend        # :3001
 
 Тестовые логины (пароль `password123`): `admin@ii.local` (все компании), `client@severny.local` (только «Северный Вкус»).
 
+Тесты (нужны Postgres + seed): `npm test` — unit + e2e изоляции компаний.
+
+Pre-commit (lefthook): `lint` → `fmt` → `test`. После `npm install` хук ставится сам (`prepare`). Пропуск: `LEFTHOOK=0 git commit …`.
+
 ## Прокси
 
 `/api/...` на фронте → `API_URL/...` на Nest (префикс `/api` снимается).  
@@ -42,7 +46,7 @@ npm run dev:frontend        # :3001
 | `remote`   | `DATABASE_URL`       | Neon (прод) |
 
 Дефолт `local`. Миграции: `db:generate` → `db:migrate` (на проде — до выката кода).  
-Drizzle подключён через `DatabaseModule`. Auth: httpOnly cookies + глобальный JWT guard (`@Public()` только login/refresh/health) · `GET /auth/me` · Swagger `/docs`.
+Drizzle подключён через `DatabaseModule`. Auth: httpOnly cookies + глобальный JWT guard (`@Public()` login/refresh/logout/health) · `GET /auth/me` · CORS (`FRONTEND_ORIGIN`) · Swagger `/docs`.
 
 ## Скрипты
 

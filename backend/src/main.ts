@@ -7,6 +7,15 @@ import { AppModule } from "./app.module";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const origins = (process.env.FRONTEND_ORIGIN ?? "http://localhost:3001")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+
+  app.enableCors({
+    origin: origins,
+    credentials: true,
+  });
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
@@ -23,6 +32,7 @@ async function bootstrap() {
     )
     .setVersion("0.1.0")
     .addCookieAuth("access_token")
+    .addCookieAuth("refresh_token")
     .addBearerAuth()
     .build();
 

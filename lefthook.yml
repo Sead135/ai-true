@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: false
+  commands:
+    lint:
+      run: npm run lint
+    fmt:
+      run: npm run fmt
+      stage_fixed: true
+    test:
+      run: npm test

@@ -1,10 +1,5 @@
 import { Controller, Get, Query, Req } from "@nestjs/common";
-import {
-  ApiBearerAuth,
-  ApiCookieAuth,
-  ApiOkResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import type { AuthenticatedRequest } from "../auth/jwt-auth.guard";
 import { Roles } from "../auth/roles.decorator";
 import { GetStatsQueryDto } from "./dto/get-stats.query.dto";

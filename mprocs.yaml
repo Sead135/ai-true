@@ -1,8 +1,8 @@
 procs:
   frontend:
-    shell: 'npm run dev:frontend'
+    shell: "npm run dev:frontend"
   backend:
-    shell: 'npm run dev:backend'
+    shell: "npm run dev:backend"
   local_db:
-    shell: 'npm run docker:up'
+    shell: "npm run docker:up"
     autostart: false

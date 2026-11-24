@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { and, gte, inArray, lte, sql } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types";
 import { BranchesService } from "../branches/branches.service";
+import { daysInclusive, utcToday } from "../common/dates";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
 import { dailyMetrics, reviews } from "../database/schema/index";
@@ -21,13 +22,6 @@ export class StatsService {
     private readonly reviews: ReviewsService,
   ) {}
 
-  /** Pull from StatsSource and upsert into daily_metrics. Used by seed; later by cron/queue. */
-  async ingest(branchIds: string[], from: string, to: string): Promise<number> {
-    if (branchIds.length === 0) return 0;
-    const rows = await this.source.fetchDaily(branchIds, from, to);
-    return this.upsert(rows);
-  }
-
   async get(actor: AccessTokenPayload, query: GetStatsQueryDto): Promise<StatsResponseDto> {
     const from = query.from.slice(0, 10);
     const to = query.to.slice(0, 10);
@@ -35,7 +29,7 @@ export class StatsService {
       throw new BadRequestException("`from` must be <= `to`");
     }
 
-    const branchIds = await this.resolveBranchIds(actor, query.branchId);
+    const branchIds = await this.branches.idsForActor(actor, query.branchId);
     if (branchIds.length === 0) {
       return { totals: emptyTotals(), series: [] };
     }
@@ -90,9 +84,14 @@ export class StatsService {
           lte(reviews.reviewedOn, new Date(`${to}T23:59:59.999Z`)),
         ),
       )
-      .groupBy(reviews.branchId, sql`to_char(${reviews.reviewedOn} at time zone 'UTC', 'YYYY-MM-DD')`);
+      .groupBy(
+        reviews.branchId,
+        sql`to_char(${reviews.reviewedOn} at time zone 'UTC', 'YYYY-MM-DD')`,
+      );
 
-    return new Map(rows.map((r) => [`${r.branchId}:${r.date}`, { count: r.count, avg: Number(r.avg) }]));
+    return new Map(
+      rows.map((r) => [`${r.branchId}:${r.date}`, { count: r.count, avg: Number(r.avg) }]),
+    );
   }
 
   /** Fill missing days in [from, min(to, today)] from StatsSource. Future dates skipped. */
@@ -153,26 +152,6 @@ export class StatsService {
 
     return rows.length;
   }
-
-  private async resolveBranchIds(actor: AccessTokenPayload, branchId?: string): Promise<string[]> {
-    if (branchId) {
-      const branch = await this.branches.getForActor(actor, branchId);
-      return [branch.id];
-    }
-
-    const list = await this.branches.list(actor);
-    return list.map((b) => b.id);
-  }
-}
-
-function utcToday(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function daysInclusive(from: string, to: string): number {
-  const a = Date.parse(`${from}T00:00:00.000Z`);
-  const b = Date.parse(`${to}T00:00:00.000Z`);
-  return Math.floor((b - a) / 86_400_000) + 1;
 }
 
 function fromDb(row: typeof dailyMetrics.$inferSelect): DailyStatsRow {
