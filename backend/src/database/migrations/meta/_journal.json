@@ -15,6 +15,20 @@
       "when": 1795533082039,
       "tag": "0001_pink_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795534526971,
+      "tag": "0002_daily_metrics",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795535359559,
+      "tag": "0003_reviews",
+      "breakpoints": true
     }
   ]
 }

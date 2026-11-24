@@ -5,6 +5,8 @@ import { AppController } from "./app.controller";
 import { BranchesModule } from "./branches/branches.module";
 import { CompaniesModule } from "./companies/companies.module";
 import { DatabaseModule } from "./database/database.module";
+import { ReviewsModule } from "./reviews/reviews.module";
+import { StatsModule } from "./stats/stats.module";
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { DatabaseModule } from "./database/database.module";
     AuthModule,
     CompaniesModule,
     BranchesModule,
+    StatsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
 })

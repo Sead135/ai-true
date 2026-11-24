@@ -69,6 +69,25 @@ export class BranchesService {
     return this.db.select().from(branches).where(eq(branches.companyId, user.companyId));
   }
 
+  async getForActor(actor: AccessTokenPayload, branchId: string): Promise<Branch> {
+    const [branch] = await this.db.select().from(branches).where(eq(branches.id, branchId)).limit(1);
+
+    if (!branch) {
+      throw new NotFoundException("Branch not found");
+    }
+
+    if (actor.role === "admin") {
+      return branch;
+    }
+
+    const user = await this.requireUser(actor.sub);
+    if (!user.companyId || user.companyId !== branch.companyId) {
+      throw new ForbiddenException("Branch is outside your scope");
+    }
+
+    return branch;
+  }
+
   private async requireUser(userId: string) {
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
