@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LOCAL_DATABASE_URL_FALLBACK, resolveDatabaseUrl } from "./connection-url.js";
+import { LOCAL_DATABASE_URL_FALLBACK, resolveDatabaseUrl } from "./connection-url";
 
 describe("resolveDatabaseUrl", () => {
   it("defaults to local Docker URL", () => {

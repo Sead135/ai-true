@@ -39,7 +39,7 @@ npm run dev:frontend        # :3001
 | `remote`   | `DATABASE_URL`       | Neon (прод) |
 
 Дефолт `local`. Миграции: `db:generate` → `db:migrate` (на проде — до выката кода).  
-Drizzle-клиент: `backend/src/database/db.ts` (`createDb`) — подключить в Nest при первом репозитории.
+Drizzle подключён через `DatabaseModule`. Auth: httpOnly cookies + глобальный JWT guard (`@Public()` только login/refresh/health) · `GET /auth/me` · Swagger `/docs`.
 
 ## Скрипты
 
