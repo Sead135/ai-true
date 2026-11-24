@@ -1,4 +1,5 @@
 import { pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { companies } from "./companies";
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "client"]);
 
@@ -7,8 +8,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   role: userRoleEnum("role").notNull(),
-  // ponytail: no FK until companies table exists
-  companyId: uuid("company_id"),
+  companyId: uuid("company_id").references(() => companies.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

@@ -5,6 +5,7 @@ import { JwtModule, type JwtSignOptions } from "@nestjs/jwt";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./jwt-auth.guard";
+import { RolesGuard } from "./roles.guard";
 
 function jwtTtl(value: string | undefined, fallback: string): JwtSignOptions["expiresIn"] {
   return (value ?? fallback) as JwtSignOptions["expiresIn"];
@@ -27,8 +28,11 @@ function jwtTtl(value: string | undefined, fallback: string): JwtSignOptions["ex
   providers: [
     AuthService,
     JwtAuthGuard,
+    RolesGuard,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
   ],
-  exports: [AuthService, JwtAuthGuard, JwtModule],
+  exports: [AuthService, JwtAuthGuard, RolesGuard, JwtModule],
 })
 export class AuthModule {}
+
