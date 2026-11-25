@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { listCompanies } from "@/lib/companies";
 import { BranchEditModal } from "./branch-edit-modal";
 import { CompanyEditModal } from "./company-edit-modal";
+import { OnboardingWizard } from "./onboarding-wizard";
 import { useSession } from "./session-context";
 import { UserEditModal } from "./user-edit-modal";
 
@@ -103,7 +104,9 @@ export function EditModalsProvider({ children }: EditModalsProviderProps) {
           onSaved={() => bump()}
           onDeleted={() => bump()}
         />
-      ) : null}
+      ) : (
+        <OnboardingWizard onDone={bump} />
+      )}
     </EditModalsCtx.Provider>
   );
 }

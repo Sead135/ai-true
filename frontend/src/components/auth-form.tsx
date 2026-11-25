@@ -3,6 +3,7 @@
 import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
 import { useState } from "react";
 import { type AuthError, login, register } from "@/lib/auth";
+import { markOnboardingPending } from "@/lib/onboarding";
 import { usePageTransition } from "./page-transition";
 
 type Mode = "login" | "register";
@@ -34,6 +35,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         await login(email, password);
       } else {
         await register(email, password);
+        markOnboardingPending();
       }
       navigate("/", { overlay: true });
     } catch (err) {

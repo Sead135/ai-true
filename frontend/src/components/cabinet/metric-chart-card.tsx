@@ -56,7 +56,7 @@ export function MetricChartCard({
       </div>
       <div className="cabinet-metric-chart-frame">
         {points.length === 0 ? (
-          <p className="cabinet-empty cabinet-empty--inset text-xs">Нет данных</p>
+          <p className="cabinet-metric-chart-empty">Нет данных</p>
         ) : (
           <BarChart points={points} className="h-full w-full" />
         )}

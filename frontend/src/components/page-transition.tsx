@@ -79,7 +79,8 @@ export function PageTransitionProvider({ children }: PageTransitionProviderProps
       pendingHref.current = null;
       return;
     }
-    if (pathname === pendingHref.current || pathname.startsWith(pendingHref.current)) {
+    const pendingPath = pendingHref.current.split("?")[0] || "/";
+    if (pathname === pendingPath || (pendingPath !== "/" && pathname.startsWith(pendingPath))) {
       hide();
     }
   }, [pathname, hide, visible]);

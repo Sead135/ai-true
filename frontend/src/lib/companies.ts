@@ -52,7 +52,7 @@ export function getCompany(id: string) {
   return api<Company>(`/companies/${id}`);
 }
 
-export function createCompany(body: CompanyInput) {
+export function createCompany(body: Pick<CompanyInput, "name"> & Partial<CompanyInput>) {
   return api<Company>("/companies", {
     method: "POST",
     body: JSON.stringify({ ...body, logoUrl: body.logoUrl ?? undefined }),

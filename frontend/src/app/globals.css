@@ -2126,7 +2126,72 @@ button.cabinet-account-avatar:hover {
 }
 
 .cabinet-metric-chart-frame {
+  display: flex;
   height: 5.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.cabinet-metric-chart-empty {
+  margin: 0;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--foreground) 45%, transparent);
+  text-align: center;
+}
+
+.onboarding-backdrop {
+  background: var(--background) !important;
+}
+
+.dark .onboarding-backdrop {
+  background: #101111 !important;
+}
+
+.onboarding-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  max-width: 11rem;
+  margin-inline: auto;
+}
+
+.onboarding-step {
+  display: flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1.5px solid var(--color-rule);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--foreground) 45%, transparent);
+  background: transparent;
+}
+
+.onboarding-step--active {
+  border-color: var(--color-signal);
+  background: var(--color-signal);
+  color: #fff;
+}
+
+.onboarding-step--done {
+  border-color: var(--color-signal);
+  color: var(--color-signal);
+}
+
+.onboarding-step-line {
+  flex: 1;
+  height: 2px;
+  margin-inline: 0.35rem;
+  border-radius: 9999px;
+  background: var(--color-rule);
+}
+
+.onboarding-step-line--done {
+  background: var(--color-signal);
 }
 
 .cabinet-day-bars {

@@ -35,7 +35,8 @@ export type ListBranchesParams = {
   limit?: number;
 };
 
-export type CreateBranchBody = BranchInput & { companyId: string };
+export type CreateBranchBody = Pick<BranchInput, "name"> &
+  Partial<BranchInput> & { companyId: string };
 
 export async function listBranches(params: ListBranchesParams = {}): Promise<BranchesPage> {
   const q = new URLSearchParams();
