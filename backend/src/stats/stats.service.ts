@@ -1,16 +1,16 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { and, gte, inArray, lte, sql } from "drizzle-orm";
-import type { AccessTokenPayload } from "../auth/auth.types";
-import { BranchesService } from "../branches/branches.service";
-import { daysInclusive, utcToday, type BranchDateRange } from "../common/dates";
-import { DRIZZLE } from "../database/database.module";
-import type { createDb } from "../database/db";
-import { dailyMetrics, reviews } from "../database/schema/index";
-import { ReviewsService } from "../reviews/reviews.service";
-import type { GetStatsQueryDto } from "./dto/get-stats.query.dto";
-import type { StatsResponseDto, StatsSeriesPointDto, StatsTotalsDto } from "./dto/stats.dto";
-import { MockStatsSource } from "./mock-stats-source";
-import type { DailyStatsRow } from "./stats-source";
+import type { AccessTokenPayload } from "../auth/auth.types.js";
+import { BranchesService } from "../branches/branches.service.js";
+import { daysInclusive, utcToday, type BranchDateRange } from "../common/dates.js";
+import { DRIZZLE } from "../database/database.module.js";
+import type { createDb } from "../database/db.js";
+import { dailyMetrics, reviews } from "../database/schema/index.js";
+import { ReviewsService } from "../reviews/reviews.service.js";
+import type { GetStatsQueryDto } from "./dto/get-stats.query.dto.js";
+import type { StatsResponseDto, StatsSeriesPointDto, StatsTotalsDto } from "./dto/stats.dto.js";
+import { MockStatsSource } from "./mock-stats-source.js";
+import type { DailyStatsRow } from "./stats-source.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 

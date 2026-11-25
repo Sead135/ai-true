@@ -1,15 +1,15 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { and, count, gte, lte, sql } from "drizzle-orm";
-import { eachDate, type DateRange } from "../common/dates";
-import { DRIZZLE } from "../database/database.module";
-import type { createDb } from "../database/db";
-import { branches, companies, dailyMetrics, reviews, users } from "../database/schema/index";
+import { eachDate, type DateRange } from "../common/dates.js";
+import { DRIZZLE } from "../database/database.module.js";
+import type { createDb } from "../database/db.js";
+import { branches, companies, dailyMetrics, reviews, users } from "../database/schema/index.js";
 import type {
   AdminMetric,
   AdminStatsSeriesDto,
   AdminStatsSeriesQueryDto,
   AdminStatsSummaryDto,
-} from "./dto/admin-stats.dto";
+} from "./dto/admin-stats.dto.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 

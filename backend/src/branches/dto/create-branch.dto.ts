@@ -9,7 +9,7 @@ import {
   MinLength,
   ValidateIf,
 } from "class-validator";
-import { IsAvatarValue } from "../../common/is-avatar.decorator";
+import { IsAvatarValue } from "../../common/is-avatar.decorator.js";
 
 export class CreateBranchDto {
   @ApiProperty({ format: "uuid" })

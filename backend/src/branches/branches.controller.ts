@@ -8,13 +8,13 @@ import {
   ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import type { AuthenticatedRequest } from "../auth/jwt-auth.guard";
-import { Roles } from "../auth/roles.decorator";
-import { BranchesService } from "./branches.service";
-import { BranchDto, BranchesPageDto } from "./dto/branch.dto";
-import { CreateBranchDto } from "./dto/create-branch.dto";
-import { ListBranchesQueryDto } from "./dto/list-branches.query.dto";
-import { UpdateBranchDto } from "./dto/update-branch.dto";
+import type { AuthenticatedRequest } from "../auth/jwt-auth.guard.js";
+import { Roles } from "../auth/roles.decorator.js";
+import { BranchesService } from "./branches.service.js";
+import { BranchDto, BranchesPageDto } from "./dto/branch.dto.js";
+import { CreateBranchDto } from "./dto/create-branch.dto.js";
+import { ListBranchesQueryDto } from "./dto/list-branches.query.dto.js";
+import { UpdateBranchDto } from "./dto/update-branch.dto.js";
 
 @ApiTags("branches")
 @ApiBearerAuth()

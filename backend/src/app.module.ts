@@ -1,14 +1,14 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { AuthModule } from "./auth/auth.module";
-import { AppController } from "./app.controller";
-import { BranchesModule } from "./branches/branches.module";
-import { CompaniesModule } from "./companies/companies.module";
-import { DatabaseModule } from "./database/database.module";
-import { ReviewsModule } from "./reviews/reviews.module";
-import { StatsModule } from "./stats/stats.module";
-import { UploadsModule } from "./uploads/uploads.module";
-import { UsersModule } from "./users/users.module";
+import { AuthModule } from "./auth/auth.module.js";
+import { AppController } from "./app.controller.js";
+import { BranchesModule } from "./branches/branches.module.js";
+import { CompaniesModule } from "./companies/companies.module.js";
+import { DatabaseModule } from "./database/database.module.js";
+import { ReviewsModule } from "./reviews/reviews.module.js";
+import { StatsModule } from "./stats/stats.module.js";
+import { UploadsModule } from "./uploads/uploads.module.js";
+import { UsersModule } from "./users/users.module.js";
 
 @Module({
   imports: [

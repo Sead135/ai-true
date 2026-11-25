@@ -17,12 +17,12 @@ import {
   ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import type { AuthenticatedRequest } from "../auth/jwt-auth.guard";
-import { Roles } from "../auth/roles.decorator";
-import { ListUsersQueryDto } from "./dto/list-users.query.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
-import { UserDto, UsersPageDto } from "./dto/user.dto";
-import { UsersService } from "./users.service";
+import type { AuthenticatedRequest } from "../auth/jwt-auth.guard.js";
+import { Roles } from "../auth/roles.decorator.js";
+import { ListUsersQueryDto } from "./dto/list-users.query.dto.js";
+import { UpdateUserDto } from "./dto/update-user.dto.js";
+import { UserDto, UsersPageDto } from "./dto/user.dto.js";
+import { UsersService } from "./users.service.js";
 
 @ApiTags("users")
 @ApiBearerAuth()

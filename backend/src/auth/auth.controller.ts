@@ -21,17 +21,17 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import type { Request, Response } from "express";
-import { REFRESH_COOKIE, clearAuthCookies, setAuthCookies } from "./auth-cookies";
-import { AuthService } from "./auth.service";
-import { LoginDto } from "./dto/login.dto";
-import { MeDto } from "./dto/me.dto";
-import { RegisterDto } from "./dto/register.dto";
-import { AuthSessionDto } from "./dto/tokens.dto";
-import { UpdateProfileDto } from "./dto/update-profile.dto";
-import type { AuthenticatedRequest } from "./jwt-auth.guard";
-import { Public } from "./public.decorator";
-import { assertRateLimit } from "./rate-limit";
-import { Roles } from "./roles.decorator";
+import { REFRESH_COOKIE, clearAuthCookies, setAuthCookies } from "./auth-cookies.js";
+import { AuthService } from "./auth.service.js";
+import { LoginDto } from "./dto/login.dto.js";
+import { MeDto } from "./dto/me.dto.js";
+import { RegisterDto } from "./dto/register.dto.js";
+import { AuthSessionDto } from "./dto/tokens.dto.js";
+import { UpdateProfileDto } from "./dto/update-profile.dto.js";
+import type { AuthenticatedRequest } from "./jwt-auth.guard.js";
+import { Public } from "./public.decorator.js";
+import { assertRateLimit } from "./rate-limit.js";
+import { Roles } from "./roles.decorator.js";
 
 @ApiTags("auth")
 @Controller("auth")

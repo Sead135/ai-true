@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { eachDate, type BranchDateRange } from "../common/dates";
-import { between, hash } from "../common/mock-hash";
-import { mockReviewsForDay } from "../reviews/mock-reviews-source";
-import type { DailyStatsRow } from "./stats-source";
+import { eachDate, type BranchDateRange } from "../common/dates.js";
+import { between, hash } from "../common/mock-hash.js";
+import { mockReviewsForDay } from "../reviews/mock-reviews-source.js";
+import type { DailyStatsRow } from "./stats-source.js";
 
 export function mockDay(branchId: string, date: string): DailyStatsRow {
   const h = hash(`${branchId}:${date}`);

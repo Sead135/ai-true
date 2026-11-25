@@ -1,6 +1,6 @@
 import { HttpException } from "@nestjs/common";
 import { afterEach, describe, expect, it } from "vitest";
-import { assertRateLimit, clearRateLimits } from "./rate-limit";
+import { assertRateLimit, clearRateLimits } from "./rate-limit.js";
 
 describe("assertRateLimit", () => {
   afterEach(() => clearRateLimits());

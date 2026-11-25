@@ -3,12 +3,12 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { randomUUID } from "node:crypto";
-import type { AccessTokenPayload } from "../auth/auth.types";
+import type { AccessTokenPayload } from "../auth/auth.types.js";
 import {
   type AllowedImageType,
   type PresignUploadDto,
   type PresignUploadResponseDto,
-} from "./dto/presign-upload.dto";
+} from "./dto/presign-upload.dto.js";
 
 const EXT: Record<AllowedImageType, string> = {
   "image/png": "png",

@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common";
-import { createDb } from "./db";
+import { createDb } from "./db.js";
 
 export const DRIZZLE = Symbol("DRIZZLE");
 

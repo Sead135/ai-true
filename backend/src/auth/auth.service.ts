@@ -9,14 +9,14 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcrypt";
 import { eq } from "drizzle-orm";
-import type { IssuedTokens } from "./auth-cookies";
-import type { AccessTokenPayload, RefreshTokenPayload } from "./auth.types";
-import type { MeDto } from "./dto/me.dto";
-import type { UpdateProfileDto } from "./dto/update-profile.dto";
+import type { IssuedTokens } from "./auth-cookies.js";
+import type { AccessTokenPayload, RefreshTokenPayload } from "./auth.types.js";
+import type { MeDto } from "./dto/me.dto.js";
+import type { UpdateProfileDto } from "./dto/update-profile.dto.js";
 import type { JwtSignOptions } from "@nestjs/jwt";
-import { DRIZZLE } from "../database/database.module";
-import type { createDb } from "../database/db";
-import { users, type User } from "../database/schema/index";
+import { DRIZZLE } from "../database/database.module.js";
+import type { createDb } from "../database/db.js";
+import { users, type User } from "../database/schema/index.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 

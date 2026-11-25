@@ -1,5 +1,5 @@
 import { SetMetadata } from "@nestjs/common";
-import type { Role } from "./auth.types";
+import type { Role } from "./auth.types.js";
 
 export const ROLES_KEY = "roles";
 

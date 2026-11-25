@@ -1,4 +1,4 @@
-import { isImageUrl } from "./is-image-url";
+import { isImageUrl } from "./is-image-url.js";
 
 /** Legacy data-URL ceiling for rows written before object storage. */
 const MAX_DATA_URL_LEN = 500_000;

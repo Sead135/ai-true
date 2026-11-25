@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { IsOptional, IsString, MaxLength, MinLength, ValidateIf } from "class-validator";
-import { IsAvatarValue } from "../../common/is-avatar.decorator";
+import { IsAvatarValue } from "../../common/is-avatar.decorator.js";
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: "Иван Петров" })

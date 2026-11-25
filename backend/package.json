@@ -5,6 +5,7 @@
   "description": "",
   "license": "UNLICENSED",
   "author": "",
+  "type": "module",
   "scripts": {
     "build": "nest build",
     "format": "cd .. && npm run fmt -- backend",

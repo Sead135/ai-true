@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { eachDate, type BranchDateRange } from "../common/dates";
-import { between, hash } from "../common/mock-hash";
-import type { ReviewRow, ReviewStatus } from "./reviews-source";
+import { eachDate, type BranchDateRange } from "../common/dates.js";
+import { between, hash } from "../common/mock-hash.js";
+import type { ReviewRow, ReviewStatus } from "./reviews-source.js";
 
 const AUTHORS = [
   "Анна К.",

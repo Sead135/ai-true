@@ -3,10 +3,10 @@ import { resolve } from "node:path";
 import { loadEnvFile } from "node:process";
 import { hash } from "bcrypt";
 import { sql } from "drizzle-orm";
-import { MockReviewsSource } from "../reviews/mock-reviews-source";
-import { MockStatsSource } from "../stats/mock-stats-source";
-import { createDb } from "./db";
-import { branches, companies, dailyMetrics, reviews, users } from "./schema/index";
+import { MockReviewsSource } from "../reviews/mock-reviews-source.js";
+import { MockStatsSource } from "../stats/mock-stats-source.js";
+import { createDb } from "./db.js";
+import { branches, companies, dailyMetrics, reviews, users } from "./schema/index.js";
 
 for (const name of [".env", "../.env"] as const) {
   const path = resolve(process.cwd(), name);

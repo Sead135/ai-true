@@ -1,10 +1,10 @@
 import { Controller, Get, Query, Req } from "@nestjs/common";
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
-import type { AuthenticatedRequest } from "../auth/jwt-auth.guard";
-import { Roles } from "../auth/roles.decorator";
-import { GetStatsQueryDto } from "./dto/get-stats.query.dto";
-import { StatsResponseDto } from "./dto/stats.dto";
-import { StatsService } from "./stats.service";
+import type { AuthenticatedRequest } from "../auth/jwt-auth.guard.js";
+import { Roles } from "../auth/roles.decorator.js";
+import { GetStatsQueryDto } from "./dto/get-stats.query.dto.js";
+import { StatsResponseDto } from "./dto/stats.dto.js";
+import { StatsService } from "./stats.service.js";
 
 @ApiTags("stats")
 @ApiBearerAuth()

@@ -1,5 +1,5 @@
 import { registerDecorator, type ValidationOptions } from "class-validator";
-import { isAvatarValue } from "./is-avatar";
+import { isAvatarValue } from "./is-avatar.js";
 
 export function IsAvatarValue(validationOptions?: ValidationOptions) {
   return (object: object, propertyName: string) => {

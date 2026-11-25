@@ -7,13 +7,13 @@ import {
 } from "@nestjs/common";
 import { hash } from "bcrypt";
 import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
-import type { AccessTokenPayload } from "../auth/auth.types";
-import { DRIZZLE } from "../database/database.module";
-import type { createDb } from "../database/db";
-import { companies, users } from "../database/schema/index";
-import type { ListUsersQueryDto } from "./dto/list-users.query.dto";
-import type { UpdateUserDto } from "./dto/update-user.dto";
-import type { UserDto, UsersPageDto } from "./dto/user.dto";
+import type { AccessTokenPayload } from "../auth/auth.types.js";
+import { DRIZZLE } from "../database/database.module.js";
+import type { createDb } from "../database/db.js";
+import { companies, users } from "../database/schema/index.js";
+import type { ListUsersQueryDto } from "./dto/list-users.query.dto.js";
+import type { UpdateUserDto } from "./dto/update-user.dto.js";
+import type { UserDto, UsersPageDto } from "./dto/user.dto.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 

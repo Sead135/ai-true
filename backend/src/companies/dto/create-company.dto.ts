@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsEmail, IsOptional, IsString, IsUrl, MinLength, ValidateIf } from "class-validator";
-import { IsAvatarValue } from "../../common/is-avatar.decorator";
+import { IsAvatarValue } from "../../common/is-avatar.decorator.js";
 
 export class CreateCompanyDto {
   @ApiProperty({ example: "Кофейня «У реки»" })

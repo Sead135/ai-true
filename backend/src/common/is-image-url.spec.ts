@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isImageUrl } from "./is-image-url";
+import { isImageUrl } from "./is-image-url.js";
 
 describe("isImageUrl", () => {
   it("accepts http(s) paths with image extensions", () => {

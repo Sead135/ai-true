@@ -1,15 +1,15 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { and, count, eq, gte, inArray, lte, sql } from "drizzle-orm";
-import type { AccessTokenPayload } from "../auth/auth.types";
-import { BranchesService } from "../branches/branches.service";
-import { utcToday, type BranchDateRange } from "../common/dates";
-import { DRIZZLE } from "../database/database.module";
-import type { createDb } from "../database/db";
-import { reviews } from "../database/schema/index";
-import type { GetReviewsQueryDto } from "./dto/get-reviews.query.dto";
-import type { ReviewsPageDto } from "./dto/review.dto";
-import { MockReviewsSource } from "./mock-reviews-source";
-import type { ReviewRow } from "./reviews-source";
+import type { AccessTokenPayload } from "../auth/auth.types.js";
+import { BranchesService } from "../branches/branches.service.js";
+import { utcToday, type BranchDateRange } from "../common/dates.js";
+import { DRIZZLE } from "../database/database.module.js";
+import type { createDb } from "../database/db.js";
+import { reviews } from "../database/schema/index.js";
+import type { GetReviewsQueryDto } from "./dto/get-reviews.query.dto.js";
+import type { ReviewsPageDto } from "./dto/review.dto.js";
+import { MockReviewsSource } from "./mock-reviews-source.js";
+import type { ReviewRow } from "./reviews-source.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 

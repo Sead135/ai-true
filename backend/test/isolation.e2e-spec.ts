@@ -3,7 +3,7 @@ import { Test, type TestingModule } from "@nestjs/testing";
 import cookieParser from "cookie-parser";
 import request from "supertest";
 import type { App } from "supertest/types";
-import { AppModule } from "../src/app.module";
+import { AppModule } from "../src/app.module.js";
 
 /** Stable IDs from `src/database/seed.ts`. */
 const COMPANY_A = "11111111-1111-4111-8111-111111111111";

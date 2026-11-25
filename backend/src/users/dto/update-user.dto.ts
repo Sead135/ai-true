@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import type { Role } from "../../auth/auth.types";
+import type { Role } from "../../auth/auth.types.js";
 import {
   IsEmail,
   IsIn,
@@ -10,7 +10,7 @@ import {
   MinLength,
   ValidateIf,
 } from "class-validator";
-import { IsAvatarValue } from "../../common/is-avatar.decorator";
+import { IsAvatarValue } from "../../common/is-avatar.decorator.js";
 
 export class UpdateUserDto {
   @ApiPropertyOptional()

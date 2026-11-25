@@ -1,5 +1,5 @@
 import { date, integer, numeric, pgTable, unique, uuid } from "drizzle-orm/pg-core";
-import { branches } from "./branches";
+import { branches } from "./branches.js";
 
 export const dailyMetrics = pgTable(
   "daily_metrics",

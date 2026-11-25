@@ -6,16 +6,16 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
-import type { AccessTokenPayload } from "../auth/auth.types";
-import { CompaniesService } from "../companies/companies.service";
-import { DRIZZLE } from "../database/database.module";
-import type { createDb } from "../database/db";
-import { requireUser } from "../database/require-user";
-import { branches, type Branch } from "../database/schema/index";
-import type { BranchesPageDto } from "./dto/branch.dto";
-import type { CreateBranchDto } from "./dto/create-branch.dto";
-import type { ListBranchesQueryDto } from "./dto/list-branches.query.dto";
-import type { UpdateBranchDto } from "./dto/update-branch.dto";
+import type { AccessTokenPayload } from "../auth/auth.types.js";
+import { CompaniesService } from "../companies/companies.service.js";
+import { DRIZZLE } from "../database/database.module.js";
+import type { createDb } from "../database/db.js";
+import { requireUser } from "../database/require-user.js";
+import { branches, type Branch } from "../database/schema/index.js";
+import type { BranchesPageDto } from "./dto/branch.dto.js";
+import type { CreateBranchDto } from "./dto/create-branch.dto.js";
+import type { ListBranchesQueryDto } from "./dto/list-branches.query.dto.js";
+import type { UpdateBranchDto } from "./dto/update-branch.dto.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 

@@ -3,9 +3,9 @@ import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import type { Request } from "express";
-import { ACCESS_COOKIE } from "./auth-cookies";
-import type { AccessTokenPayload } from "./auth.types";
-import { IS_PUBLIC_KEY } from "./public.decorator";
+import { ACCESS_COOKIE } from "./auth-cookies.js";
+import type { AccessTokenPayload } from "./auth.types.js";
+import { IS_PUBLIC_KEY } from "./public.decorator.js";
 
 export type AuthenticatedRequest = Request & { user: AccessTokenPayload };
 

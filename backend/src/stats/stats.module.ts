@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
-import { BranchesModule } from "../branches/branches.module";
-import { ReviewsModule } from "../reviews/reviews.module";
-import { AdminStatsController } from "./admin-stats.controller";
-import { AdminStatsService } from "./admin-stats.service";
-import { MockStatsSource } from "./mock-stats-source";
-import { StatsController } from "./stats.controller";
-import { StatsService } from "./stats.service";
+import { BranchesModule } from "../branches/branches.module.js";
+import { ReviewsModule } from "../reviews/reviews.module.js";
+import { AdminStatsController } from "./admin-stats.controller.js";
+import { AdminStatsService } from "./admin-stats.service.js";
+import { MockStatsSource } from "./mock-stats-source.js";
+import { StatsController } from "./stats.controller.js";
+import { StatsService } from "./stats.service.js";
 
 @Module({
   imports: [BranchesModule, ReviewsModule],

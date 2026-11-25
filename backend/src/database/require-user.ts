@@ -1,7 +1,7 @@
 import { NotFoundException } from "@nestjs/common";
 import { eq } from "drizzle-orm";
-import type { createDb } from "./db";
-import { users } from "./schema/index";
+import type { createDb } from "./db.js";
+import { users } from "./schema/index.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 

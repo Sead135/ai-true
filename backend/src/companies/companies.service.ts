@@ -6,15 +6,15 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
-import type { AccessTokenPayload } from "../auth/auth.types";
-import { DRIZZLE } from "../database/database.module";
-import type { createDb } from "../database/db";
-import { requireUser } from "../database/require-user";
-import { companies, users, type Company } from "../database/schema/index";
-import type { CompaniesPageDto } from "./dto/company.dto";
-import type { CreateCompanyDto } from "./dto/create-company.dto";
-import type { ListCompaniesQueryDto } from "./dto/list-companies.query.dto";
-import type { UpdateCompanyDto } from "./dto/update-company.dto";
+import type { AccessTokenPayload } from "../auth/auth.types.js";
+import { DRIZZLE } from "../database/database.module.js";
+import type { createDb } from "../database/db.js";
+import { requireUser } from "../database/require-user.js";
+import { companies, users, type Company } from "../database/schema/index.js";
+import type { CompaniesPageDto } from "./dto/company.dto.js";
+import type { CreateCompanyDto } from "./dto/create-company.dto.js";
+import type { ListCompaniesQueryDto } from "./dto/list-companies.query.dto.js";
+import type { UpdateCompanyDto } from "./dto/update-company.dto.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 

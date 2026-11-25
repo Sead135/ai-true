@@ -1,12 +1,12 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
-import { Roles } from "../auth/roles.decorator";
-import { AdminStatsService } from "./admin-stats.service";
+import { Roles } from "../auth/roles.decorator.js";
+import { AdminStatsService } from "./admin-stats.service.js";
 import {
   AdminStatsSeriesDto,
   AdminStatsSeriesQueryDto,
   AdminStatsSummaryDto,
-} from "./dto/admin-stats.dto";
+} from "./dto/admin-stats.dto.js";
 
 @ApiTags("admin-stats")
 @ApiBearerAuth()

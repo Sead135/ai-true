@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { BranchesModule } from "../branches/branches.module";
-import { MockReviewsSource } from "./mock-reviews-source";
-import { ReviewsController } from "./reviews.controller";
-import { ReviewsService } from "./reviews.service";
+import { BranchesModule } from "../branches/branches.module.js";
+import { MockReviewsSource } from "./mock-reviews-source.js";
+import { ReviewsController } from "./reviews.controller.js";
+import { ReviewsService } from "./reviews.service.js";
 
 @Module({
   imports: [BranchesModule],

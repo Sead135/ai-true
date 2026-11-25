@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { resolveDatabaseUrl, type DatabaseEnv } from "./connection-url";
-import * as schema from "./schema/index";
+import { resolveDatabaseUrl, type DatabaseEnv } from "./connection-url.js";
+import * as schema from "./schema/index.js";
 
 export function createDb(env: DatabaseEnv = process.env) {
   const pool = new Pool({ connectionString: resolveDatabaseUrl(env) });

@@ -8,7 +8,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { branches } from "./branches";
+import { branches } from "./branches.js";
 
 export const reviewStatusEnum = pgEnum("review_status", ["new", "processed"]);
 

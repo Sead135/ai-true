@@ -8,13 +8,13 @@ import {
   ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import type { AuthenticatedRequest } from "../auth/jwt-auth.guard";
-import { Roles } from "../auth/roles.decorator";
-import { CompaniesService } from "./companies.service";
-import { CompaniesPageDto, CompanyDto } from "./dto/company.dto";
-import { CreateCompanyDto } from "./dto/create-company.dto";
-import { ListCompaniesQueryDto } from "./dto/list-companies.query.dto";
-import { UpdateCompanyDto } from "./dto/update-company.dto";
+import type { AuthenticatedRequest } from "../auth/jwt-auth.guard.js";
+import { Roles } from "../auth/roles.decorator.js";
+import { CompaniesService } from "./companies.service.js";
+import { CompaniesPageDto, CompanyDto } from "./dto/company.dto.js";
+import { CreateCompanyDto } from "./dto/create-company.dto.js";
+import { ListCompaniesQueryDto } from "./dto/list-companies.query.dto.js";
+import { UpdateCompanyDto } from "./dto/update-company.dto.js";
 
 @ApiTags("companies")
 @ApiBearerAuth()
