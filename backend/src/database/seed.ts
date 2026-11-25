@@ -13,8 +13,8 @@ for (const name of [".env", "../.env"] as const) {
   if (existsSync(path)) loadEnvFile(path);
 }
 
-const COMPANY_A = "11111111-1111-1111-1111-111111111111";
-const COMPANY_B = "22222222-2222-2222-2222-222222222222";
+const COMPANY_A = "11111111-1111-4111-8111-111111111111";
+const COMPANY_B = "22222222-2222-4222-8222-222222222222";
 const BRANCH_A1 = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1";
 const BRANCH_A2 = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2";
 const BRANCH_B1 = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1";
@@ -102,6 +102,7 @@ async function seed() {
         id: ADMIN_ID,
         email: "admin@ii.local",
         passwordHash,
+        name: "Администратор ИИ",
         role: "admin",
         companyId: null,
       },
@@ -109,6 +110,7 @@ async function seed() {
         id: CLIENT_ID,
         email: "client@severny.local",
         passwordHash,
+        name: "Анна Северная",
         role: "client",
         companyId: COMPANY_A,
       },

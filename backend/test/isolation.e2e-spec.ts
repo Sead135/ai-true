@@ -6,8 +6,8 @@ import type { App } from "supertest/types";
 import { AppModule } from "../src/app.module";
 
 /** Stable IDs from `src/database/seed.ts`. */
-const COMPANY_A = "11111111-1111-1111-1111-111111111111";
-const COMPANY_B = "22222222-2222-2222-2222-222222222222";
+const COMPANY_A = "11111111-1111-4111-8111-111111111111";
+const COMPANY_B = "22222222-2222-4222-8222-222222222222";
 const BRANCH_A1 = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1";
 const BRANCH_B1 = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1";
 
@@ -43,12 +43,14 @@ describe("Company data isolation (e2e)", () => {
 
   it("client lists only own company and its branches", async () => {
     const companies = await agent.get("/companies").expect(200);
-    expect(companies.body).toHaveLength(1);
-    expect(companies.body[0].id).toBe(COMPANY_A);
+    expect(companies.body.items).toHaveLength(1);
+    expect(companies.body.items[0].id).toBe(COMPANY_A);
 
     const branches = await agent.get("/branches").expect(200);
-    expect(branches.body.every((b: { companyId: string }) => b.companyId === COMPANY_A)).toBe(true);
-    expect(branches.body.some((b: { id: string }) => b.id === BRANCH_B1)).toBe(false);
+    expect(branches.body.items.every((b: { companyId: string }) => b.companyId === COMPANY_A)).toBe(
+      true,
+    );
+    expect(branches.body.items.some((b: { id: string }) => b.id === BRANCH_B1)).toBe(false);
   });
 
   it("client cannot read another company's company/branch/stats", async () => {

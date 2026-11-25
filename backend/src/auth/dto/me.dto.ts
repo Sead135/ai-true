@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import type { Role } from "@ii/shared";
 
 export class MeDto {
@@ -10,4 +10,13 @@ export class MeDto {
 
   @ApiProperty({ enum: ["admin", "client"] })
   role!: Role;
+
+  @ApiPropertyOptional({ nullable: true })
+  name!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  avatarUrl!: string | null;
+
+  @ApiProperty()
+  createdAt!: Date;
 }

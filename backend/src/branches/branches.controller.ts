@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiCookieAuth,
@@ -11,8 +11,10 @@ import {
 import type { AuthenticatedRequest } from "../auth/jwt-auth.guard";
 import { Roles } from "../auth/roles.decorator";
 import { BranchesService } from "./branches.service";
-import { BranchDto } from "./dto/branch.dto";
+import { BranchDto, BranchesPageDto } from "./dto/branch.dto";
 import { CreateBranchDto } from "./dto/create-branch.dto";
+import { ListBranchesQueryDto } from "./dto/list-branches.query.dto";
+import { UpdateBranchDto } from "./dto/update-branch.dto";
 
 @ApiTags("branches")
 @ApiBearerAuth()
@@ -31,9 +33,12 @@ export class BranchesController {
 
   @Get()
   @Roles("admin", "client")
-  @ApiOkResponse({ type: BranchDto, isArray: true })
-  list(@Req() req: AuthenticatedRequest): Promise<BranchDto[]> {
-    return this.branches.list(req.user);
+  @ApiOkResponse({ type: BranchesPageDto })
+  list(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: ListBranchesQueryDto,
+  ): Promise<BranchesPageDto> {
+    return this.branches.list(req.user, query);
   }
 
   @Get(":id")
@@ -43,5 +48,18 @@ export class BranchesController {
   @ApiNotFoundResponse({ description: "Branch not found" })
   getOne(@Req() req: AuthenticatedRequest, @Param("id") id: string): Promise<BranchDto> {
     return this.branches.getForActor(req.user, id);
+  }
+
+  @Patch(":id")
+  @Roles("admin", "client")
+  @ApiOkResponse({ type: BranchDto })
+  @ApiForbiddenResponse({ description: "Branch is outside your scope" })
+  @ApiNotFoundResponse({ description: "Branch not found" })
+  update(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: UpdateBranchDto,
+  ): Promise<BranchDto> {
+    return this.branches.update(req.user, id, body);
   }
 }

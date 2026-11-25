@@ -5,13 +5,16 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { eq } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
 import { requireUser } from "../database/require-user";
 import { companies, users, type Company } from "../database/schema/index";
+import type { CompaniesPageDto } from "./dto/company.dto";
 import type { CreateCompanyDto } from "./dto/create-company.dto";
+import type { ListCompaniesQueryDto } from "./dto/list-companies.query.dto";
+import type { UpdateCompanyDto } from "./dto/update-company.dto";
 
 type Db = ReturnType<typeof createDb>["db"];
 
@@ -33,13 +36,13 @@ export class CompaniesService {
         .insert(companies)
         .values({
           name: dto.name,
-          address: dto.address,
-          city: dto.city,
-          phone: dto.phone,
-          description: dto.description,
+          address: dto.address ?? "",
+          city: dto.city ?? "",
+          phone: dto.phone ?? "",
+          description: dto.description ?? "",
           logoUrl: dto.logoUrl ?? null,
-          website: dto.website,
-          email: dto.email,
+          website: dto.website ?? "",
+          email: dto.email ?? "",
         })
         .returning();
 
@@ -48,17 +51,54 @@ export class CompaniesService {
     });
   }
 
-  async list(actor: AccessTokenPayload): Promise<Company[]> {
-    if (actor.role === "admin") {
-      return this.db.select().from(companies);
+  async list(
+    actor: AccessTokenPayload,
+    query: ListCompaniesQueryDto = {},
+  ): Promise<CompaniesPageDto> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const offset = (page - 1) * limit;
+
+    const conditions: SQL[] = [];
+    if (actor.role !== "admin") {
+      const user = await requireUser(this.db, actor.sub);
+      if (!user.companyId) {
+        return { items: [], total: 0, page, limit };
+      }
+      conditions.push(eq(companies.id, user.companyId));
     }
 
-    const user = await requireUser(this.db, actor.sub);
-    if (!user.companyId) {
-      return [];
+    const term = query.q?.trim();
+    if (term) {
+      const pattern = `%${term}%`;
+      conditions.push(
+        or(
+          ilike(companies.name, pattern),
+          ilike(companies.city, pattern),
+          ilike(companies.email, pattern),
+        )!,
+      );
     }
 
-    return this.db.select().from(companies).where(eq(companies.id, user.companyId));
+    const city = query.city?.trim();
+    if (city) {
+      conditions.push(ilike(companies.city, city));
+    }
+
+    const where = conditions.length ? and(...conditions) : undefined;
+
+    const [[{ total }], items] = await Promise.all([
+      this.db.select({ total: count() }).from(companies).where(where),
+      this.db
+        .select()
+        .from(companies)
+        .where(where)
+        .orderBy(desc(companies.createdAt))
+        .limit(limit)
+        .offset(offset),
+    ]);
+
+    return { items, total: Number(total), page, limit };
   }
 
   async getForActor(actor: AccessTokenPayload, companyId: string): Promise<Company> {
@@ -81,5 +121,31 @@ export class CompaniesService {
       throw new ForbiddenException("Company is outside your scope");
     }
     return company;
+  }
+
+  async update(
+    actor: AccessTokenPayload,
+    companyId: string,
+    dto: UpdateCompanyDto,
+  ): Promise<Company> {
+    await this.getForActor(actor, companyId);
+
+    const patch = Object.fromEntries(
+      Object.entries({
+        ...dto,
+        ...(dto.logoUrl !== undefined ? { logoUrl: dto.logoUrl || null } : {}),
+      }).filter(([, v]) => v !== undefined),
+    );
+
+    const [updated] = await this.db
+      .update(companies)
+      .set(patch)
+      .where(eq(companies.id, companyId))
+      .returning();
+
+    if (!updated) {
+      throw new NotFoundException("Company not found");
+    }
+    return updated;
   }
 }

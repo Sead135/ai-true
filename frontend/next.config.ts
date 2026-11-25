@@ -7,12 +7,6 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@ii/shared"],
   turbopack: {
     root: import.meta.dirname,
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
   },
   async rewrites() {
     return [

@@ -7,8 +7,9 @@ import {
   IsUrl,
   IsUUID,
   MinLength,
+  ValidateIf,
 } from "class-validator";
-import { IsImageUrl } from "../../common/is-image-url.decorator";
+import { IsAvatarValue } from "../../common/is-avatar.decorator";
 
 export class CreateBranchDto {
   @ApiProperty({ format: "uuid" })
@@ -20,38 +21,46 @@ export class CreateBranchDto {
   @MinLength(1)
   name!: string;
 
-  @ApiProperty({ example: "ул. Баумана, 5" })
-  @IsString()
-  @MinLength(1)
-  address!: string;
-
-  @ApiProperty({ example: "Казань" })
-  @IsString()
-  @MinLength(1)
-  city!: string;
-
-  @ApiProperty({ example: "+79997654321" })
-  @IsString()
-  @MinLength(5)
-  phone!: string;
-
-  @ApiPropertyOptional({ example: "https://cdn.example.com/branch.png" })
+  @ApiPropertyOptional({ example: "ул. Баумана, 5" })
   @IsOptional()
-  @IsImageUrl()
-  logoUrl?: string;
-
-  @ApiProperty({ example: "https://example.com/baumana" })
-  @IsUrl({ require_protocol: true })
-  website!: string;
-
-  @ApiProperty({ example: "baumana@example.com" })
-  @IsEmail()
-  email!: string;
-
-  @ApiProperty({ example: "Кофейня" })
   @IsString()
-  @MinLength(1)
-  businessCategory!: string;
+  address?: string;
+
+  @ApiPropertyOptional({ example: "Казань" })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ example: "+79997654321" })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: "http(s) image URL or data:image/*;base64,… (max ~350KB)",
+  })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== "")
+  @IsAvatarValue()
+  logoUrl?: string | null;
+
+  @ApiPropertyOptional({ example: "https://example.com/baumana" })
+  @IsOptional()
+  @ValidateIf((_, v) => typeof v === "string" && v.length > 0)
+  @IsUrl({ require_protocol: true })
+  website?: string;
+
+  @ApiPropertyOptional({ example: "baumana@example.com" })
+  @IsOptional()
+  @ValidateIf((_, v) => typeof v === "string" && v.length > 0)
+  @IsEmail()
+  email?: string;
+
+  @ApiPropertyOptional({ example: "Кофейня" })
+  @IsOptional()
+  @IsString()
+  businessCategory?: string;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()

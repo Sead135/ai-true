@@ -2,10 +2,11 @@ import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
+import { json, urlencoded } from "express";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
 
   const origins = (process.env.FRONTEND_ORIGIN ?? "http://localhost:3001")
     .split(",")
@@ -16,6 +17,9 @@ async function bootstrap() {
     origin: origins,
     credentials: true,
   });
+  // ponytail: 1mb for avatar data-URL uploads; move to object storage if avatars grow
+  app.use(json({ limit: "1mb" }));
+  app.use(urlencoded({ extended: true, limit: "1mb" }));
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({

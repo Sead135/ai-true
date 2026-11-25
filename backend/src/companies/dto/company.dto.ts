@@ -31,3 +31,17 @@ export class CompanyDto {
   @ApiProperty()
   createdAt!: Date;
 }
+
+export class CompaniesPageDto {
+  @ApiProperty({ type: CompanyDto, isArray: true })
+  items!: CompanyDto[];
+
+  @ApiProperty()
+  total!: number;
+
+  @ApiProperty()
+  page!: number;
+
+  @ApiProperty()
+  limit!: number;
+}

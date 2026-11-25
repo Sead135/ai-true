@@ -25,3 +25,17 @@ export class ReviewDto {
   @ApiProperty()
   createdAt!: Date;
 }
+
+export class ReviewsPageDto {
+  @ApiProperty({ type: ReviewDto, isArray: true })
+  items!: ReviewDto[];
+
+  @ApiProperty()
+  total!: number;
+
+  @ApiProperty()
+  page!: number;
+
+  @ApiProperty()
+  limit!: number;
+}

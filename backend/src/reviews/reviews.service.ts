@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { and, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, count, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types";
 import { BranchesService } from "../branches/branches.service";
 import { utcToday } from "../common/dates";
@@ -7,7 +7,7 @@ import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
 import { reviews } from "../database/schema/index";
 import type { GetReviewsQueryDto } from "./dto/get-reviews.query.dto";
-import type { ReviewDto } from "./dto/review.dto";
+import type { ReviewsPageDto } from "./dto/review.dto";
 import { REVIEWS_SOURCE, type ReviewRow, type ReviewsSource } from "./reviews-source";
 
 type Db = ReturnType<typeof createDb>["db"];
@@ -43,7 +43,10 @@ export class ReviewsService {
     await this.upsert(missing);
   }
 
-  async list(actor: AccessTokenPayload, query: GetReviewsQueryDto): Promise<ReviewDto[]> {
+  async list(actor: AccessTokenPayload, query: GetReviewsQueryDto): Promise<ReviewsPageDto> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const offset = (page - 1) * limit;
     const from = (query.from ?? defaultFrom()).slice(0, 10);
     const to = (query.to ?? utcToday()).slice(0, 10);
     if (from > to) {
@@ -51,7 +54,9 @@ export class ReviewsService {
     }
 
     const branchIds = await this.branches.idsForActor(actor, query.branchId);
-    if (branchIds.length === 0) return [];
+    if (branchIds.length === 0) {
+      return { items: [], total: 0, page, limit };
+    }
 
     // ponytail: lazy mock fill on GET; swap source when real reviews API lands
     await this.ensureForRange(branchIds, from, to);
@@ -72,20 +77,29 @@ export class ReviewsService {
       conditions.push(eq(reviews.status, query.status));
     }
 
-    return this.db
-      .select({
-        id: reviews.id,
-        branchId: reviews.branchId,
-        rating: reviews.rating,
-        text: reviews.text,
-        authorName: reviews.authorName,
-        status: reviews.status,
-        reviewedOn: reviews.reviewedOn,
-        createdAt: reviews.createdAt,
-      })
-      .from(reviews)
-      .where(and(...conditions))
-      .orderBy(sql`${reviews.reviewedOn} desc`);
+    const where = and(...conditions);
+
+    const [[{ total }], items] = await Promise.all([
+      this.db.select({ total: count() }).from(reviews).where(where),
+      this.db
+        .select({
+          id: reviews.id,
+          branchId: reviews.branchId,
+          rating: reviews.rating,
+          text: reviews.text,
+          authorName: reviews.authorName,
+          status: reviews.status,
+          reviewedOn: reviews.reviewedOn,
+          createdAt: reviews.createdAt,
+        })
+        .from(reviews)
+        .where(where)
+        .orderBy(sql`${reviews.reviewedOn} desc`)
+        .limit(limit)
+        .offset(offset),
+    ]);
+
+    return { items, total: Number(total), page, limit };
   }
 
   private async upsert(rows: ReviewRow[]): Promise<number> {

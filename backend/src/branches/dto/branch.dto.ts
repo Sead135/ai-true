@@ -37,3 +37,17 @@ export class BranchDto {
   @ApiProperty()
   createdAt!: Date;
 }
+
+export class BranchesPageDto {
+  @ApiProperty({ type: BranchDto, isArray: true })
+  items!: BranchDto[];
+
+  @ApiProperty()
+  total!: number;
+
+  @ApiProperty()
+  page!: number;
+
+  @ApiProperty()
+  limit!: number;
+}

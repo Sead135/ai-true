@@ -7,6 +7,7 @@ import { CompaniesModule } from "./companies/companies.module";
 import { DatabaseModule } from "./database/database.module";
 import { ReviewsModule } from "./reviews/reviews.module";
 import { StatsModule } from "./stats/stats.module";
+import { UsersModule } from "./users/users.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { StatsModule } from "./stats/stats.module";
     BranchesModule,
     StatsModule,
     ReviewsModule,
+    UsersModule,
   ],
   controllers: [AppController],
 })

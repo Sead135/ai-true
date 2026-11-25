@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsEmail, IsOptional, IsString, IsUrl, MinLength } from "class-validator";
-import { IsImageUrl } from "../../common/is-image-url.decorator";
+import { IsEmail, IsOptional, IsString, IsUrl, MinLength, ValidateIf } from "class-validator";
+import { IsAvatarValue } from "../../common/is-avatar.decorator";
 
 export class CreateCompanyDto {
   @ApiProperty({ example: "Кофейня «У реки»" })
@@ -8,36 +8,44 @@ export class CreateCompanyDto {
   @MinLength(1)
   name!: string;
 
-  @ApiProperty({ example: "ул. Ленина, 10" })
-  @IsString()
-  @MinLength(1)
-  address!: string;
-
-  @ApiProperty({ example: "Казань" })
-  @IsString()
-  @MinLength(1)
-  city!: string;
-
-  @ApiProperty({ example: "+79991234567" })
-  @IsString()
-  @MinLength(5)
-  phone!: string;
-
-  @ApiProperty({ example: "Сеть кофеен" })
-  @IsString()
-  @MinLength(1)
-  description!: string;
-
-  @ApiPropertyOptional({ example: "https://cdn.example.com/logo.png" })
+  @ApiPropertyOptional({ example: "ул. Ленина, 10" })
   @IsOptional()
-  @IsImageUrl()
-  logoUrl?: string;
+  @IsString()
+  address?: string;
 
-  @ApiProperty({ example: "https://example.com" })
+  @ApiPropertyOptional({ example: "Казань" })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ example: "+79991234567" })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional({ example: "Сеть кофеен" })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: "http(s) image URL or data:image/*;base64,… (max ~350KB)",
+  })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== "")
+  @IsAvatarValue()
+  logoUrl?: string | null;
+
+  @ApiPropertyOptional({ example: "https://example.com" })
+  @IsOptional()
+  @ValidateIf((_, v) => typeof v === "string" && v.length > 0)
   @IsUrl({ require_protocol: true })
-  website!: string;
+  website?: string;
 
-  @ApiProperty({ example: "hello@example.com" })
+  @ApiPropertyOptional({ example: "hello@example.com" })
+  @IsOptional()
+  @ValidateIf((_, v) => typeof v === "string" && v.length > 0)
   @IsEmail()
-  email!: string;
+  email?: string;
 }

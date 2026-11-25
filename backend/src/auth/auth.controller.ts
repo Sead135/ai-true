@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Req,
   Res,
@@ -26,9 +27,11 @@ import { LoginDto } from "./dto/login.dto";
 import { MeDto } from "./dto/me.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { AuthSessionDto } from "./dto/tokens.dto";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
 import type { AuthenticatedRequest } from "./jwt-auth.guard";
 import { Public } from "./public.decorator";
 import { assertRateLimit } from "./rate-limit";
+import { Roles } from "./roles.decorator";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -96,16 +99,22 @@ export class AuthController {
   }
 
   @Get("me")
+  @Roles("admin", "client")
   @ApiBearerAuth()
   @ApiCookieAuth("access_token")
   @ApiOkResponse({ type: MeDto })
   @ApiUnauthorizedResponse({ description: "Missing or invalid access token" })
-  me(@Req() req: AuthenticatedRequest): MeDto {
-    return {
-      sub: req.user.sub,
-      email: req.user.email,
-      role: req.user.role,
-    };
+  me(@Req() req: AuthenticatedRequest): Promise<MeDto> {
+    return this.auth.me(req.user);
+  }
+
+  @Patch("me")
+  @Roles("admin", "client")
+  @ApiBearerAuth()
+  @ApiCookieAuth("access_token")
+  @ApiOkResponse({ type: MeDto })
+  updateProfile(@Req() req: AuthenticatedRequest, @Body() body: UpdateProfileDto): Promise<MeDto> {
+    return this.auth.updateProfile(req.user, body);
   }
 }
 

@@ -1,10 +1,18 @@
-import { ConflictException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcrypt";
 import { eq } from "drizzle-orm";
 import type { IssuedTokens } from "./auth-cookies";
 import type { AccessTokenPayload, RefreshTokenPayload } from "./auth.types";
+import type { MeDto } from "./dto/me.dto";
+import type { UpdateProfileDto } from "./dto/update-profile.dto";
 import { jwtTtl } from "./jwt-ttl";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
@@ -79,6 +87,28 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
+  async me(actor: AccessTokenPayload): Promise<MeDto> {
+    const user = await this.db.query.users.findFirst({ where: eq(users.id, actor.sub) });
+    if (!user) throw new NotFoundException("User not found");
+    return toMe(user);
+  }
+
+  async updateProfile(actor: AccessTokenPayload, dto: UpdateProfileDto): Promise<MeDto> {
+    const existing = await this.db.query.users.findFirst({ where: eq(users.id, actor.sub) });
+    if (!existing) throw new NotFoundException("User not found");
+
+    const [updated] = await this.db
+      .update(users)
+      .set({
+        ...(dto.name !== undefined ? { name: dto.name.trim() || null } : {}),
+        ...(dto.avatarUrl !== undefined ? { avatarUrl: dto.avatarUrl || null } : {}),
+      })
+      .where(eq(users.id, actor.sub))
+      .returning();
+
+    return toMe(updated);
+  }
+
   private async issueTokens(user: User): Promise<IssuedTokens> {
     const accessExpiresIn = this.config.get<string>("JWT_ACCESS_TTL") ?? "15m";
     const refreshExpiresIn = this.config.get<string>("JWT_REFRESH_TTL") ?? "7d";
@@ -119,4 +149,15 @@ export class AuthService {
   private get refreshSecret(): string {
     return this.config.getOrThrow<string>("JWT_REFRESH_SECRET");
   }
+}
+
+function toMe(user: User): MeDto {
+  return {
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+    name: user.name ?? null,
+    avatarUrl: user.avatarUrl ?? null,
+    createdAt: user.createdAt,
+  };
 }
