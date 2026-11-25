@@ -1893,17 +1893,6 @@ button.cabinet-account-avatar:hover {
     flex: none;
     min-width: 0;
   }
-
-  /* Chips must share width — flex-shrink:0 made the row wider than the phone */
-  .cabinet-page-filters .period-filter-presets {
-    width: 100%;
-  }
-
-  .cabinet-page-filters .period-filter-chip {
-    flex: 1 1 0;
-    min-width: 0;
-    padding-inline: 0.35rem;
-  }
 }
 
 @media (min-width: 768px) {
