@@ -17,9 +17,8 @@ async function bootstrap() {
     origin: origins,
     credentials: true,
   });
-  // ponytail: 1mb for avatar data-URL uploads; move to object storage if avatars grow
-  app.use(json({ limit: "1mb" }));
-  app.use(urlencoded({ extended: true, limit: "1mb" }));
+  app.use(json({ limit: "100kb" }));
+  app.use(urlencoded({ extended: true, limit: "100kb" }));
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({

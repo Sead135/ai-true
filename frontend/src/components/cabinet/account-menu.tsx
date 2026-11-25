@@ -4,12 +4,11 @@ import { Button, Chip, Input, Label, TextField, Modal, useOverlayState } from "@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { logout, profileDisplayName, updateProfile, type AuthError, type Me } from "@/lib/auth";
+import { uploadImage, validateImageFile } from "@/lib/uploads";
 import { useModalSize } from "@/lib/use-is-mobile";
 import { IconCancel, IconSave } from "./filter-icons";
 import { ImageDropArea } from "./image-drop-area";
 import { useSession } from "./session-context";
-
-const MAX_AVATAR_BYTES = 350_000;
 
 function UploadIcon({ className = "size-5" }: { className?: string }) {
   return (
@@ -58,11 +57,27 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
   const router = useRouter();
   const size = useModalSize("sm");
 
+  const [avatarDraft, setAvatarDraft] = useState<string | null>(me.avatarUrl);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarUrlMode, setAvatarUrlMode] = useState(false);
+  const [avatarUrlInput, setAvatarUrlInput] = useState("");
+  const [avatarPending, setAvatarPending] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [nameDraft, setNameDraft] = useState(me.name ?? "");
+  const [namePending, setNamePending] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  function revokeAvatarPreview() {
+    if (avatarDraft?.startsWith("blob:")) URL.revokeObjectURL(avatarDraft);
+  }
+
   const settings = useOverlayState();
   const avatarModal = useOverlayState({
     onOpenChange: (open) => {
       if (open) {
+        revokeAvatarPreview();
         setAvatarDraft(me.avatarUrl);
+        setAvatarFile(null);
         setAvatarUrlMode(false);
         setAvatarUrlInput(me.avatarUrl?.startsWith("http") ? me.avatarUrl : "");
         setAvatarError(null);
@@ -78,16 +93,6 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
     },
   });
 
-  const [avatarDraft, setAvatarDraft] = useState<string | null>(me.avatarUrl);
-  const [avatarUrlMode, setAvatarUrlMode] = useState(false);
-  const [avatarUrlInput, setAvatarUrlInput] = useState("");
-  const [avatarPending, setAvatarPending] = useState(false);
-  const [avatarError, setAvatarError] = useState<string | null>(null);
-
-  const [nameDraft, setNameDraft] = useState(me.name ?? "");
-  const [namePending, setNamePending] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
-
   async function onLogout() {
     await logout();
     settings.setOpen(false);
@@ -95,28 +100,17 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
     router.refresh();
   }
 
-  function onPickFile(file: File | undefined) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setAvatarError("Нужен файл изображения (PNG, JPG, WebP, GIF)");
+  function onPickFile(file: File) {
+    const invalid = validateImageFile(file);
+    if (invalid) {
+      setAvatarError(invalid);
       return;
     }
-    if (file.size > MAX_AVATAR_BYTES) {
-      setAvatarError("Максимум ~350 КБ");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : null;
-      if (!result) {
-        setAvatarError("Не удалось прочитать файл");
-        return;
-      }
-      setAvatarDraft(result);
-      setAvatarError(null);
-    };
-    reader.onerror = () => setAvatarError("Не удалось прочитать файл");
-    reader.readAsDataURL(file);
+    revokeAvatarPreview();
+    setAvatarFile(file);
+    setAvatarDraft(URL.createObjectURL(file));
+    setAvatarUrlMode(false);
+    setAvatarError(null);
   }
 
   async function saveAvatar() {
@@ -132,10 +126,14 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
           return;
         }
         next = url;
+      } else if (avatarFile) {
+        next = await uploadImage("avatar", avatarFile);
       }
       const updated = await updateProfile({ avatarUrl: next });
+      revokeAvatarPreview();
       setMe(updated);
       setAvatarDraft(updated.avatarUrl);
+      setAvatarFile(null);
       setAvatarPending(false);
       avatarModal.setOpen(false);
     } catch (err) {
@@ -282,7 +280,7 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
                   preview={<AvatarFace me={me} url={avatarDraft} />}
                   disabled={avatarPending}
                   onFile={onPickFile}
-                  hint="Перетащите изображение сюда или нажмите. PNG, JPG, WebP, GIF · до ~350 КБ"
+                  hint="Перетащите изображение сюда или нажмите. PNG, JPG, WebP, GIF · до 5 МБ"
                 />
 
                 {!avatarUrlMode ? (
@@ -312,8 +310,11 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
                     className="w-full"
                     isDisabled={avatarPending}
                     onPress={() => {
+                      revokeAvatarPreview();
                       setAvatarDraft(null);
+                      setAvatarFile(null);
                       setAvatarUrlInput("");
+                      setAvatarUrlMode(false);
                       setAvatarError(null);
                     }}
                   >

@@ -2,11 +2,10 @@
 
 import { Button, FieldError, Input, Label, TextField, Modal, useOverlayState } from "@heroui/react";
 import { useState } from "react";
+import { uploadImage, validateImageFile } from "@/lib/uploads";
 import { useModalSize } from "@/lib/use-is-mobile";
 import { IconCancel, IconSave } from "./filter-icons";
 import { ImageDropArea } from "./image-drop-area";
-
-const MAX_LOGO_BYTES = 350_000;
 
 function UploadIcon({ className = "size-5" }: { className?: string }) {
   return (
@@ -58,14 +57,22 @@ export function LogoNameFields({
 }) {
   const size = useModalSize("sm");
   const [draft, setDraft] = useState<string | null>(logoUrl);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [urlMode, setUrlMode] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  function revokePreview() {
+    if (draft?.startsWith("blob:")) URL.revokeObjectURL(draft);
+  }
 
   const logoModal = useOverlayState({
     onOpenChange: (open) => {
       if (open) {
+        revokePreview();
         setDraft(logoUrl);
+        setPendingFile(null);
         setUrlMode(false);
         setUrlInput(logoUrl?.startsWith("http") ? logoUrl : "");
         setError(null);
@@ -73,44 +80,45 @@ export function LogoNameFields({
     },
   });
 
-  function onPickFile(file: File | undefined) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("Нужен файл изображения (PNG, JPG, WebP, GIF)");
+  function onPickFile(file: File) {
+    const invalid = validateImageFile(file);
+    if (invalid) {
+      setError(invalid);
       return;
     }
-    if (file.size > MAX_LOGO_BYTES) {
-      setError("Максимум ~350 КБ");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : null;
-      if (!result) {
-        setError("Не удалось прочитать файл");
-        return;
-      }
-      setDraft(result);
-      setUrlMode(false);
-      setError(null);
-    };
-    reader.onerror = () => setError("Не удалось прочитать файл");
-    reader.readAsDataURL(file);
+    revokePreview();
+    setPendingFile(file);
+    setDraft(URL.createObjectURL(file));
+    setUrlMode(false);
+    setError(null);
   }
 
-  function applyLogo() {
+  async function applyLogo() {
     setError(null);
-    if (urlMode) {
-      const url = urlInput.trim();
-      if (!url) {
-        setError("Вставьте ссылку на изображение");
-        return;
+    setPending(true);
+    try {
+      if (urlMode) {
+        const url = urlInput.trim();
+        if (!url) {
+          setError("Вставьте ссылку на изображение");
+          setPending(false);
+          return;
+        }
+        onLogoChange(url);
+      } else if (pendingFile) {
+        const publicUrl = await uploadImage("logo", pendingFile);
+        revokePreview();
+        onLogoChange(publicUrl);
+      } else {
+        onLogoChange(draft);
       }
-      onLogoChange(url);
-    } else {
-      onLogoChange(draft);
+      setPendingFile(null);
+      setPending(false);
+      logoModal.setOpen(false);
+    } catch (err) {
+      setError((err as { message?: string }).message ?? "Не удалось загрузить изображение");
+      setPending(false);
     }
-    logoModal.setOpen(false);
   }
 
   return (
@@ -147,7 +155,7 @@ export function LogoNameFields({
       </div>
 
       <Modal state={logoModal}>
-        <Modal.Backdrop isDismissable>
+        <Modal.Backdrop isDismissable={!pending}>
           <Modal.Container size={size} placement="center" scroll="inside">
             <Modal.Dialog>
               <Modal.Header>
@@ -157,16 +165,22 @@ export function LogoNameFields({
               <Modal.Body className="flex flex-col gap-4">
                 <ImageDropArea
                   preview={<LogoFace url={draft} name={name} />}
+                  disabled={pending}
                   onFile={onPickFile}
-                  hint="Перетащите изображение сюда или нажмите. PNG, JPG, WebP, GIF · до ~350 КБ"
+                  hint="Перетащите изображение сюда или нажмите. PNG, JPG, WebP, GIF · до 5 МБ"
                 />
 
                 {!urlMode ? (
-                  <Button variant="ghost" className="w-full" onPress={() => setUrlMode(true)}>
+                  <Button
+                    variant="ghost"
+                    className="w-full"
+                    isDisabled={pending}
+                    onPress={() => setUrlMode(true)}
+                  >
                     Загрузить по ссылке
                   </Button>
                 ) : (
-                  <TextField value={urlInput} onChange={setUrlInput} fullWidth>
+                  <TextField value={urlInput} onChange={setUrlInput} isDisabled={pending} fullWidth>
                     <Label>URL картинки</Label>
                     <Input type="url" placeholder="https://…" />
                   </TextField>
@@ -176,8 +190,11 @@ export function LogoNameFields({
                   <Button
                     variant="ghost"
                     className="w-full"
+                    isDisabled={pending}
                     onPress={() => {
+                      revokePreview();
                       setDraft(null);
+                      setPendingFile(null);
                       setUrlInput("");
                       setUrlMode(false);
                       setError(null);
@@ -193,14 +210,15 @@ export function LogoNameFields({
                 <Button
                   variant="ghost"
                   className="btn-danger-plain flex-1"
+                  isDisabled={pending}
                   onPress={() => logoModal.setOpen(false)}
                 >
                   <IconCancel />
                   Отменить
                 </Button>
-                <Button className="flex-1" onPress={applyLogo}>
+                <Button className="flex-1" isDisabled={pending} onPress={applyLogo}>
                   <IconSave />
-                  Готово
+                  {pending ? "Загрузка…" : "Готово"}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>

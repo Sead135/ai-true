@@ -1,4 +1,10 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useState } from "react";
+import { BrandLogo } from "../brand-logo";
+
+const COLLAPSE_KEY = "cabinet-aside-collapsed";
 
 export function Skeleton({ className = "", style }: { className?: string; style?: CSSProperties }) {
   return <span className={`cabinet-skeleton ${className}`.trim()} style={style} aria-hidden />;
@@ -55,4 +61,113 @@ export function DetailSkeleton() {
       <Skeleton className="h-11 w-full rounded-[15px]" />
     </div>
   );
+}
+
+function PageHeadSkeleton({ withFilters = false }: { withFilters?: boolean }) {
+  return (
+    <div className="cabinet-page-head">
+      <div className={withFilters ? "cabinet-page-head-row" : undefined}>
+        <div className="flex min-w-0 flex-col gap-2">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-4 w-64 max-w-full" />
+        </div>
+        {withFilters ? (
+          <Skeleton className="mt-3 h-11 w-full max-w-sm rounded-[15px] md:mt-0" />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function DashboardPageSkeleton({ metrics = 6 }: { metrics?: number }) {
+  return (
+    <div className="cabinet-dashboard" aria-busy="true" aria-label="Загрузка">
+      <PageHeadSkeleton withFilters />
+      <MetricsSkeleton count={metrics} />
+      <section className="cabinet-panel">
+        <div className="cabinet-panel-head">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="mt-2 h-3.5 w-48" />
+        </div>
+        <div className="mt-4">
+          <ChartSkeleton />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function ListPageSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div aria-busy="true" aria-label="Загрузка">
+      <PageHeadSkeleton />
+      <div className="filters-bar mt-5">
+        <Skeleton className="h-11 w-full max-w-md rounded-[15px]" />
+      </div>
+      <ListCardSkeleton count={count} />
+    </div>
+  );
+}
+
+export function AsideSkeleton() {
+  const [collapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem(COLLAPSE_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  return (
+    <aside className={`cabinet-aside ${collapsed ? "cabinet-aside--collapsed" : ""}`} aria-hidden>
+      <div className="cabinet-aside-head">
+        <div className="cabinet-brand">
+          <BrandLogo className="cabinet-brand-full h-7 w-auto" />
+          <BrandLogo mark className="cabinet-brand-mark h-7 w-auto" />
+        </div>
+      </div>
+
+      <nav className="cabinet-aside-nav">
+        {Array.from({ length: 4 }, (_, i) => (
+          <span key={i} className="cabinet-nav-link pointer-events-none">
+            <Skeleton className="size-5 shrink-0 rounded-md" />
+            <Skeleton className="cabinet-nav-label h-4 w-24" />
+          </span>
+        ))}
+      </nav>
+
+      <div className="cabinet-aside-foot mt-auto">
+        <div className="cabinet-aside-theme">
+          <Skeleton className="h-10 w-full rounded-2xl" />
+        </div>
+        <Skeleton className="mt-2 h-12 w-full rounded-2xl" />
+      </div>
+    </aside>
+  );
+}
+
+export function CabinetShellSkeleton({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="cabinet-root" aria-busy="true" aria-label="Загрузка кабинета">
+      <header className="cabinet-mobile-bar">
+        <BrandLogo className="h-7 w-auto" />
+        <Skeleton className="size-9 rounded-xl" />
+      </header>
+
+      <AsideSkeleton />
+
+      <div className="cabinet-main">
+        <div className="cabinet-content">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+const LIST_PATHS = new Set(["/companies", "/branches", "/users", "/reviews"]);
+
+export function pageSkeletonForPath(pathname: string) {
+  if (pathname === "/") return <DashboardPageSkeleton />;
+  if (LIST_PATHS.has(pathname)) return <ListPageSkeleton />;
+  return <DetailSkeleton />;
 }

@@ -13,7 +13,7 @@ export function IsAvatarValue(validationOptions?: ValidationOptions) {
           return typeof value === "string" && isAvatarValue(value);
         },
         defaultMessage() {
-          return "Avatar must be an image URL or a small data:image upload";
+          return "Must be an http(s) image URL (or a legacy data:image value)";
         },
       },
     });

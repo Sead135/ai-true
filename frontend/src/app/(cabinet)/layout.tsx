@@ -1,13 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { CabinetShell } from "@/components/cabinet/cabinet-shell";
-import { DetailSkeleton, ListCardSkeleton, MetricsSkeleton } from "@/components/cabinet/skeletons";
+import { CabinetShellSkeleton, pageSkeletonForPath } from "@/components/cabinet/skeletons";
 import { fetchMe, type Me } from "@/lib/auth";
 
 export default function CabinetLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [me, setMe] = useState<Me | null | undefined>(undefined);
 
   useEffect(() => {
@@ -30,28 +31,14 @@ export default function CabinetLayout({ children }: { children: React.ReactNode 
   }, [router]);
 
   if (me === undefined) {
-    return (
-      <div className="cabinet-root">
-        <div className="cabinet-main">
-          <div className="cabinet-content flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <span className="cabinet-skeleton h-8 w-40" />
-              <span className="cabinet-skeleton h-4 w-64" />
-            </div>
-            <MetricsSkeleton count={6} />
-            <ListCardSkeleton count={3} />
-            <DetailSkeleton />
-          </div>
-        </div>
-      </div>
-    );
+    return <CabinetShellSkeleton>{pageSkeletonForPath(pathname)}</CabinetShellSkeleton>;
   }
 
   if (!me) return null;
 
   return (
     <CabinetShell me={me}>
-      <Suspense fallback={null}>{children}</Suspense>
+      <Suspense fallback={pageSkeletonForPath(pathname)}>{children}</Suspense>
     </CabinetShell>
   );
 }

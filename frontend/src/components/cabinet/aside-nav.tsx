@@ -85,15 +85,14 @@ export function AsideNav({
   const pathname = usePathname();
   const { openCompany, revision } = useEditModals();
   const [company, setCompany] = useState<Company | null | undefined>(undefined);
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
     try {
-      setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+      return localStorage.getItem(COLLAPSE_KEY) === "1";
     } catch {
-      /* ignore */
+      return false;
     }
-  }, []);
+  });
 
   useEffect(() => {
     onMobileOpenChange(false);
