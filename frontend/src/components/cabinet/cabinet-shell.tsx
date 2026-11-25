@@ -20,6 +20,10 @@ export function CabinetShell({ me, children }: CabinetShellProps) {
     const body = document.body;
     const prevHtml = html.style.overflow;
     const prevBody = body.style.overflow;
+    // Login/keyboard can leave document scrolled; lock would freeze that offset
+    window.scrollTo(0, 0);
+    html.scrollTop = 0;
+    body.scrollTop = 0;
     html.style.overflow = "hidden";
     body.style.overflow = "hidden";
     return () => {

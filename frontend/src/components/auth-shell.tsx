@@ -10,12 +10,12 @@ type AuthShellProps = {
 
 export function AuthShell({ title, subtitle, children }: AuthShellProps) {
   return (
-    <div className="auth-shell relative flex min-h-screen flex-col md:flex-row">
-      <div className="auth-brand-panel pointer-events-none absolute inset-0 min-h-full md:hidden">
+    <div className="auth-shell relative flex h-dvh max-h-dvh flex-col overflow-hidden md:flex-row">
+      <div className="auth-brand-panel pointer-events-none absolute inset-0 md:hidden">
         <AuthOrbs />
       </div>
 
-      <aside className="auth-brand-panel relative hidden min-h-screen w-[46%] flex-col justify-between px-14 py-12 md:flex">
+      <aside className="auth-brand-panel relative hidden h-full w-[46%] shrink-0 flex-col justify-between px-14 py-12 md:flex">
         <AuthOrbs />
 
         <div>
@@ -45,7 +45,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
         <p className="auth-brand-foot text-xs">Для команд с несколькими точками</p>
       </aside>
 
-      <main className="auth-form-column relative z-10 flex flex-1 flex-col">
+      <main className="auth-form-column relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto">
         <header className="auth-form-header">
           <BrandLogo className="auth-form-header-logo h-7 w-auto" />
           <ThemeToggle />

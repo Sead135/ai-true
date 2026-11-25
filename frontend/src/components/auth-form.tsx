@@ -55,10 +55,13 @@ function AuthFormInner({ mode }: AuthFormProps) {
         await register(email, password);
         markOnboardingPending();
       }
-      // Drop focus so iOS Safari releases input zoom before cabinet mounts
+      // Drop focus + scroll so cabinet doesn't inherit login/keyboard offset
       if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
       navigate(mode === "login" ? safeNext(searchParams.get("next")) : "/", { overlay: true });
     } catch (err) {
       const authErr = err as AuthError;
