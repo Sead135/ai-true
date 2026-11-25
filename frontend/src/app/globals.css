@@ -547,9 +547,21 @@ button:disabled {
   }
 }
 
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 /* Cabinet — bento layout in brand tokens */
 .cabinet-root {
   display: flex;
+  width: 100%;
+  max-width: 100%;
   height: 100dvh;
   max-height: 100dvh;
   flex-direction: column;
@@ -1855,6 +1867,8 @@ button.cabinet-account-avatar:hover {
   .cabinet-page-filters,
   .cabinet-page-filters .filters-bar-fields {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .cabinet-page-filters .filters-bar-fields {
@@ -1878,6 +1892,17 @@ button.cabinet-account-avatar:hover {
     width: 100%;
     flex: none;
     min-width: 0;
+  }
+
+  /* Chips must share width — flex-shrink:0 made the row wider than the phone */
+  .cabinet-page-filters .period-filter-presets {
+    width: 100%;
+  }
+
+  .cabinet-page-filters .period-filter-chip {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 0.35rem;
   }
 }
 

@@ -38,6 +38,8 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
+  // Prevents iOS Safari auto-zoom on <16px inputs (and stuck zoom after login)
+  maximumScale: 1,
   viewportFit: "cover",
 };
 
