@@ -41,9 +41,10 @@ export class UploadsService implements OnModuleInit {
   }
 
   async onModuleInit(): Promise<void> {
+    // Browser Origin never has a trailing slash — strip so env typos don't break CORS.
     const origins = (this.config.get<string>("FRONTEND_ORIGIN") ?? "http://localhost:3001")
       .split(",")
-      .map((o) => o.trim())
+      .map((o) => o.trim().replace(/\/$/, ""))
       .filter(Boolean);
     try {
       await this.s3.send(
@@ -62,6 +63,7 @@ export class UploadsService implements OnModuleInit {
           },
         }),
       );
+      this.log.log(`S3 CORS origins: ${origins.join(", ")}`);
     } catch (err) {
       this.log.warn(`CORS apply failed (uploads may fail from browser): ${String(err)}`);
     }

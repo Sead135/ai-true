@@ -8,5 +8,7 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // Don't proxy cross-origin (e.g. S3 presigned PUT) — that breaks CORS.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(fetch(event.request));
 });
