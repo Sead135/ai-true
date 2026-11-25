@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { logout, profileDisplayName, updateProfile, type AuthError, type Me } from "@/lib/auth";
 import { useModalSize } from "@/lib/use-is-mobile";
-import { ThemeToggle } from "../theme-toggle";
 import { IconCancel, IconSave } from "./filter-icons";
 import { ImageDropArea } from "./image-drop-area";
 import { useSession } from "./session-context";
@@ -257,11 +256,6 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
                       year: "numeric",
                     })}
                   </p>
-                </div>
-
-                <div className="flex items-center justify-between rounded-[14px] bg-[var(--field-background)] px-3 py-2.5">
-                  <span className="text-sm text-foreground/70">Настройки темы</span>
-                  <ThemeToggle />
                 </div>
               </Modal.Body>
 

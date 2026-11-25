@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { listCompanies, type Company } from "@/lib/companies";
 import { BrandLogo } from "../brand-logo";
 import { usePageTransition } from "../page-transition";
+import { ThemeToggle } from "../theme-toggle";
 import { AccountMenu } from "./account-menu";
 import { useEditModals } from "./edit-modals-context";
 import { IconBranch, IconBuilding, IconChart, IconReviews, IconUsers } from "./nav-icons";
@@ -224,7 +225,7 @@ export function AsideNav({
           </button>
         ) : null}
 
-        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
+        <nav className="cabinet-aside-nav">
           <NavLink
             href="/"
             label="Аналитика"
@@ -267,6 +268,9 @@ export function AsideNav({
         </nav>
 
         <div className="cabinet-aside-foot mt-auto">
+          <div className="cabinet-aside-theme">
+            <ThemeToggle labeled collapsed={collapsed} />
+          </div>
           <AccountMenu collapsed={collapsed} />
         </div>
       </aside>

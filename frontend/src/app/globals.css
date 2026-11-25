@@ -38,7 +38,11 @@ button:disabled {
   --focus: var(--color-signal);
   --field-border-focus: var(--color-signal);
   --app-focus-border: var(--color-signal);
-  --app-focus-outline: color-mix(in srgb, var(--color-signal) 16%, transparent);
+  /* ≥~25% so Chrome doesn't inject its blue a11y fallback ring */
+  --app-focus-outline: color-mix(in srgb, var(--color-signal) 32%, transparent);
+  --app-active-border: color-mix(in srgb, var(--color-signal) 55%, var(--color-rule));
+  --app-active-fill: color-mix(in srgb, var(--color-signal) 12%, transparent);
+  --app-field-border: var(--color-rule);
 }
 
 .dark,
@@ -54,35 +58,21 @@ button:disabled {
   --focus: #ff5a2a;
   --field-border-focus: #ff5a2a;
   --app-focus-border: #ff5a2a;
-  --app-focus-outline: color-mix(in srgb, #ff5a2a 16%, transparent);
+  --app-focus-outline: color-mix(in srgb, #ff5a2a 32%, transparent);
+  --app-active-border: color-mix(in srgb, #ff5a2a 55%, #2a2c2c);
+  --app-active-fill: color-mix(in srgb, #ff5a2a 12%, transparent);
+  --app-field-border: #2a2c2c;
 }
 
-/* Unified focus: accent border + soft outline, no HeroUI white ring-offset */
-:is(
-  .input,
-  .textarea,
-  .filter-dropdown-trigger,
-  .list-search,
-  .filters-bar-burger,
-  .image-drop-area,
-  .date-range-picker__trigger,
-  .dropdown__trigger
-):is(
+/* Kill HeroUI / Tailwind white focus rings site-wide */
+:where(
   :focus,
   :focus-visible,
   [data-focused="true"],
   [data-focus-visible="true"],
   [data-open="true"],
   [aria-expanded="true"]
-),
-.list-search:focus-within,
-.input-group:focus-within,
-.input-group[data-focus-within="true"],
-.text-field[data-focus-within="true"] .input {
-  border-color: var(--app-focus-border) !important;
-  outline: 3px solid var(--app-focus-outline) !important;
-  outline-offset: 0 !important;
-  box-shadow: none !important;
+) {
   --tw-ring-shadow: 0 0 #0000 !important;
   --tw-ring-offset-shadow: 0 0 #0000 !important;
   --tw-ring-color: transparent !important;
@@ -90,17 +80,60 @@ button:disabled {
   --tw-ring-offset-width: 0px !important;
 }
 
-.button:focus-visible,
-.button[data-focus-visible="true"],
-.filters-bar-burger:focus-visible {
+/*
+ * Unified focus — same recipe everywhere:
+ * accent border (when bordered) + 3px soft outline, offset 0.
+ */
+:is(
+  .input,
+  .textarea,
+  .filter-dropdown-trigger,
+  .dropdown__trigger,
+  .date-range-picker__trigger,
+  .list-search,
+  .filters-bar-burger,
+  .image-drop-area,
+  .period-filter-chip,
+  .button,
+  .cabinet-nav-link,
+  .cabinet-metric-select,
+  .cabinet-metric-expand,
+  .cabinet-metric-chart-select,
+  .cabinet-metric--clickable,
+  .cabinet-panel-action,
+  .auth-switch-link,
+  .settings-avatar-btn,
+  .settings-name-btn,
+  .filter-field-icon--btn,
+  button.cabinet-list-card,
+  .cabinet-company,
+  .cabinet-collapse-btn,
+  .cabinet-account,
+  .cabinet-account-more,
+  .modal__close-button,
+  .close-button
+):is(:focus, :focus-visible, [data-focused="true"], [data-focus-visible="true"]),
+:is(
+  .filter-dropdown-trigger,
+  .dropdown__trigger,
+  .date-range-picker__trigger,
+  .period-filter-chip
+):is([data-open="true"], [aria-expanded="true"]),
+.list-search:focus-within,
+.input-group:focus-within,
+.input-group[data-focus-within="true"],
+.text-field[data-focus-within="true"] .input,
+.textfield[data-focus-within="true"] .input {
+  border-color: var(--app-focus-border) !important;
   outline: 3px solid var(--app-focus-outline) !important;
   outline-offset: 0 !important;
   box-shadow: none !important;
-  --tw-ring-shadow: 0 0 #0000 !important;
-  --tw-ring-offset-shadow: 0 0 #0000 !important;
-  --tw-ring-color: transparent !important;
-  --tw-ring-offset-color: transparent !important;
-  --tw-ring-offset-width: 0px !important;
+}
+
+/* Unified selected / pressed accent (chips, metric cards) */
+:is(.period-filter-chip--active, .cabinet-metric--active, .cabinet-metric-chart--active) {
+  border-color: var(--app-active-border) !important;
+  box-shadow: 0 0 0 3px var(--app-focus-outline) !important;
 }
 
 /* Auth brand panel — light grey / near-black from site */
@@ -390,7 +423,7 @@ button:disabled {
     height: 2.85rem;
     min-height: 2.85rem;
     border-radius: 14px;
-    border: 1px solid var(--color-rule);
+    border: 1px solid var(--app-field-border) !important;
     background: var(--field-background) !important;
     color: var(--field-foreground);
     padding-inline: 0.95rem;
@@ -402,15 +435,6 @@ button:disabled {
       background 160ms ease;
   }
 
-  .dark .auth-fields .input,
-  .dark .auth-fields .input--primary,
-  .dark .auth-fields .input--secondary,
-  .dark .auth-fields .filter-dropdown-trigger,
-  .dark .auth-fields .dropdown__trigger.filter-dropdown-trigger {
-    border-color: #2a2c2c;
-    background: #222424 !important;
-  }
-
   .auth-fields .input::placeholder {
     color: var(--field-placeholder);
   }
@@ -419,14 +443,18 @@ button:disabled {
   .auth-fields .input[data-hovered="true"],
   .auth-fields .filter-dropdown-trigger:hover,
   .auth-fields .filter-dropdown-trigger[data-hovered="true"] {
-    border-color: color-mix(in srgb, var(--color-signal) 28%, var(--color-rule));
+    border-color: color-mix(in srgb, var(--color-signal) 28%, var(--app-field-border)) !important;
   }
 
   .dark .auth-fields .input:hover,
   .dark .auth-fields .input[data-hovered="true"],
   .dark .auth-fields .filter-dropdown-trigger:hover,
-  .dark .auth-fields .filter-dropdown-trigger[data-hovered="true"] {
-    border-color: color-mix(in srgb, var(--color-signal) 35%, #2a2c2c);
+  .dark .auth-fields .filter-dropdown-trigger[data-hovered="true"],
+  [data-theme="dark"] .auth-fields .input:hover,
+  [data-theme="dark"] .auth-fields .input[data-hovered="true"],
+  [data-theme="dark"] .auth-fields .filter-dropdown-trigger:hover,
+  [data-theme="dark"] .auth-fields .filter-dropdown-trigger[data-hovered="true"] {
+    border-color: color-mix(in srgb, var(--color-signal) 35%, #2a2c2c) !important;
     background: #262828 !important;
   }
 
@@ -437,9 +465,6 @@ button:disabled {
   .auth-fields .filter-dropdown-trigger[data-open="true"],
   .auth-fields .filter-dropdown-trigger[aria-expanded="true"] {
     background: #fff !important;
-    border-color: var(--app-focus-border) !important;
-    outline: 3px solid var(--app-focus-outline) !important;
-    outline-offset: 0 !important;
   }
 
   .dark .auth-fields .input:focus,
@@ -447,7 +472,13 @@ button:disabled {
   .dark .auth-fields .filter-dropdown-trigger:focus,
   .dark .auth-fields .filter-dropdown-trigger[data-focused="true"],
   .dark .auth-fields .filter-dropdown-trigger[data-open="true"],
-  .dark .auth-fields .filter-dropdown-trigger[aria-expanded="true"] {
+  .dark .auth-fields .filter-dropdown-trigger[aria-expanded="true"],
+  [data-theme="dark"] .auth-fields .input:focus,
+  [data-theme="dark"] .auth-fields .input[data-focused="true"],
+  [data-theme="dark"] .auth-fields .filter-dropdown-trigger:focus,
+  [data-theme="dark"] .auth-fields .filter-dropdown-trigger[data-focused="true"],
+  [data-theme="dark"] .auth-fields .filter-dropdown-trigger[data-open="true"],
+  [data-theme="dark"] .auth-fields .filter-dropdown-trigger[aria-expanded="true"] {
     background: #1f2020 !important;
   }
 
@@ -469,12 +500,6 @@ button:disabled {
   .auth-submit:hover,
   .auth-submit[data-hovered="true"] {
     background: var(--color-signal-hover) !important;
-  }
-
-  .auth-fields .button--primary:focus-visible,
-  .auth-submit:focus-visible {
-    outline: 3px solid var(--app-focus-outline) !important;
-    outline-offset: 0 !important;
   }
 
   .auth-error {
@@ -517,8 +542,6 @@ button:disabled {
   }
 
   .auth-switch-link:focus-visible {
-    outline: 3px solid var(--app-focus-outline);
-    outline-offset: 2px;
     border-radius: 4px;
   }
 }
@@ -608,11 +631,15 @@ button:disabled {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  border: 1px solid transparent;
   border-radius: 10px;
+  background: transparent;
   color: color-mix(in srgb, var(--foreground) 55%, transparent);
+  outline: none;
   transition:
     background 160ms ease,
-    color 160ms ease;
+    color 160ms ease,
+    border-color 160ms ease;
 }
 
 .cabinet-collapse-btn:hover {
@@ -709,7 +736,8 @@ button:disabled {
     max-height: none;
     width: 15.5rem;
     flex-shrink: 0;
-    overflow: hidden;
+    /* visible so 3px focus outline isn't clipped; nav scrolls itself */
+    overflow: visible;
     border-radius: 0;
     border: none;
     border-right: 1px solid var(--color-rule);
@@ -789,6 +817,9 @@ button:disabled {
 }
 
 .cabinet-aside-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
   padding-top: 0.85rem;
 }
 
@@ -796,6 +827,79 @@ button:disabled {
   .cabinet-aside-foot {
     padding-top: 1.25rem;
   }
+}
+
+.cabinet-aside-theme {
+  width: 100%;
+}
+
+.cabinet-theme-toggle-skeleton {
+  display: block;
+  width: 100%;
+  height: 2.5rem;
+  border-radius: 12px;
+}
+
+.cabinet-theme-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  padding: 0.62rem 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--foreground) 68%, transparent);
+  outline: none;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.cabinet-theme-toggle:hover {
+  background: var(--field-background);
+  color: var(--foreground);
+}
+
+.cabinet-theme-toggle-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.cabinet-theme-toggle-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cabinet-theme-toggle--collapsed {
+  width: 100%;
+  justify-content: center;
+  padding-inline: 0.55rem;
+}
+
+.cabinet-aside--collapsed .cabinet-theme-toggle-label {
+  display: none;
+}
+
+/* Room for 3px focus outline inside the scrollport */
+.cabinet-aside-nav {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 3px;
+  margin: -3px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cabinet-company {
@@ -806,6 +910,7 @@ button:disabled {
   border: 1px solid var(--color-rule);
   background: var(--field-background);
   padding: 0.65rem 0.75rem;
+  outline: none;
   transition: border-color 160ms ease;
 }
 
@@ -846,11 +951,6 @@ button:disabled {
 
 .dark .cabinet-nav-link--active {
   background: color-mix(in srgb, var(--color-signal) 18%, transparent);
-}
-
-.cabinet-nav-link:focus-visible {
-  outline: 3px solid var(--app-focus-outline);
-  outline-offset: 0;
 }
 
 .cabinet-nav-icon {
@@ -1086,9 +1186,18 @@ button:disabled {
 .filters-bar-modal-body .combo-box,
 .filters-bar-modal-body .date-field,
 .filters-bar-modal-body .date-range-picker,
+.filters-bar-modal-body .date-range-filter,
+.filters-bar-modal-body .filter-combo,
+.filters-bar-modal-body .reviews-filter,
 .filters-bar-modal-body [class*="date"] {
   width: 100%;
   min-width: 0;
+  flex: none;
+  max-width: none;
+}
+
+.filters-bar-modal-body .filter-dropdown-trigger {
+  width: 100%;
 }
 
 .date-range-filter,
@@ -1237,8 +1346,7 @@ button:disabled {
 }
 
 .period-filter-chip--active {
-  border-color: color-mix(in srgb, var(--color-signal) 55%, var(--color-rule));
-  background: color-mix(in srgb, var(--color-signal) 12%, transparent);
+  background: var(--app-active-fill);
   color: var(--color-signal);
   font-weight: 600;
 }
@@ -1311,20 +1419,15 @@ button:disabled {
   font-size: var(--text-sm);
   line-height: var(--text-sm--line-height, 1.25rem);
   text-align: start;
-  /* permanently disable HeroUI focus-ring (white ring-offset flash) */
-  outline: none !important;
-  box-shadow: none !important;
-  --tw-ring-shadow: 0 0 #0000 !important;
-  --tw-ring-offset-shadow: 0 0 #0000 !important;
-  --tw-ring-color: transparent !important;
-  --tw-ring-offset-color: transparent !important;
-  --tw-ring-offset-width: 0px !important;
+  /* resting: no outline; focus ring comes from the site-wide unified focus rules */
+  outline: none;
+  box-shadow: none;
 }
 
 /* Form/modals: same fill + border as .auth-fields inputs */
 .auth-fields .filter-dropdown-trigger,
 .auth-fields .dropdown__trigger.filter-dropdown-trigger {
-  border: 1px solid var(--color-rule);
+  border: 1px solid var(--app-field-border) !important;
   border-radius: 14px;
   background: var(--field-background) !important;
   color: var(--field-foreground);
@@ -1332,20 +1435,16 @@ button:disabled {
   font-size: 0.9375rem;
 }
 
-.dark .auth-fields .filter-dropdown-trigger,
-.dark .auth-fields .dropdown__trigger.filter-dropdown-trigger {
-  border-color: #2a2c2c;
-  background: #222424 !important;
-}
-
 .auth-fields .filter-dropdown-trigger:hover,
 .auth-fields .filter-dropdown-trigger[data-hovered="true"] {
-  border-color: color-mix(in srgb, var(--color-signal) 28%, var(--color-rule));
+  border-color: color-mix(in srgb, var(--color-signal) 28%, var(--app-field-border)) !important;
 }
 
 .dark .auth-fields .filter-dropdown-trigger:hover,
-.dark .auth-fields .filter-dropdown-trigger[data-hovered="true"] {
-  border-color: color-mix(in srgb, var(--color-signal) 35%, #2a2c2c);
+.dark .auth-fields .filter-dropdown-trigger[data-hovered="true"],
+[data-theme="dark"] .auth-fields .filter-dropdown-trigger:hover,
+[data-theme="dark"] .auth-fields .filter-dropdown-trigger[data-hovered="true"] {
+  border-color: color-mix(in srgb, var(--color-signal) 35%, #2a2c2c) !important;
   background: #262828 !important;
 }
 
@@ -1618,11 +1717,15 @@ button.cabinet-account-avatar:hover {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  border: 1px solid transparent;
   border-radius: 10px;
+  background: transparent;
   color: color-mix(in srgb, var(--foreground) 55%, transparent);
+  outline: none;
   transition:
     background 160ms ease,
-    color 160ms ease;
+    color 160ms ease,
+    border-color 160ms ease;
 }
 
 .cabinet-account-more:hover {
@@ -1663,55 +1766,76 @@ button.cabinet-account-avatar:hover {
   gap: 0.85rem 1.25rem;
 }
 
-/* Reviews: burger beside title on mobile, full filter row under title on desktop */
+/* Reviews: title + filters; filters wrap on narrow widths */
 .reviews-page-head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
 }
 
 .reviews-page-filters {
-  flex: 0 0 auto;
+  width: 100%;
   min-width: 0;
+}
+
+.reviews-page-filters .filters-bar-fields,
+.reviews-page-filters.filters-bar--single-row .filters-bar-fields {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.reviews-page-filters .reviews-filter {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.reviews-page-filters .reviews-filter--branch {
+  width: 11.5rem;
+}
+
+.reviews-page-filters .reviews-filter--rating {
+  width: 13.25rem;
+}
+
+.reviews-page-filters .reviews-filter--status {
+  width: 11.5rem;
+}
+
+.reviews-page-filters .reviews-filter--date {
+  width: 15.5rem;
+}
+
+@media (max-width: 767px) {
+  .reviews-page-head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+  }
+
+  .reviews-page-filters {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  /* Inline filters only when burger is off; modal body still uses full width */
+  .reviews-page-filters .filters-bar-fields {
+    width: 100%;
+  }
+
+  .reviews-page-filters .reviews-filter {
+    flex: 1 1 100%;
+    width: 100%;
+  }
 }
 
 @media (min-width: 768px) {
   .reviews-page-head {
-    flex-direction: column;
-    align-items: stretch;
     gap: 1.25rem;
-  }
-
-  .reviews-page-filters {
-    width: 100%;
-  }
-
-  .reviews-page-filters .filters-bar-fields {
-    flex-wrap: nowrap;
-    align-items: center;
-  }
-
-  .reviews-page-filters .reviews-filter {
-    width: auto;
-    flex: 0 0 auto;
-  }
-
-  .reviews-page-filters .reviews-filter--branch {
-    width: 11.5rem;
-  }
-
-  .reviews-page-filters .reviews-filter--rating {
-    width: 13.25rem;
-  }
-
-  .reviews-page-filters .reviews-filter--status {
-    width: 11.5rem;
-  }
-
-  .reviews-page-filters .reviews-filter--date {
-    width: 15.5rem;
   }
 }
 
@@ -1727,13 +1851,28 @@ button.cabinet-account-avatar:hover {
     align-items: stretch;
   }
 
+  .cabinet-page-filters,
+  .cabinet-page-filters .filters-bar-fields {
+    width: 100%;
+  }
+
   .cabinet-page-filters .filters-bar-fields {
     flex-direction: column;
     align-items: stretch;
-    flex-wrap: nowrap;
   }
 
-  .cabinet-page-filters .filter-combo,
+  .cabinet-page-filters .filter-combo {
+    display: flex;
+    width: 100%;
+    flex: none;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .cabinet-page-filters .filter-combo .filter-dropdown-trigger {
+    width: 100%;
+  }
+
   .cabinet-page-filters .period-filter {
     width: 100%;
     flex: none;
@@ -1861,11 +2000,6 @@ button.cabinet-account-avatar:hover {
   border-radius: 10px;
 }
 
-.cabinet-metric-select:focus-visible {
-  outline: 3px solid var(--app-focus-outline);
-  outline-offset: 2px;
-}
-
 .cabinet-metric-expand {
   position: absolute;
   top: 0.65rem;
@@ -1889,11 +2023,6 @@ button.cabinet-account-avatar:hover {
   color: var(--color-signal);
 }
 
-.cabinet-metric-expand:focus-visible {
-  outline: 3px solid var(--app-focus-outline);
-  outline-offset: 0;
-}
-
 .cabinet-metric--clickable {
   cursor: pointer;
   transition:
@@ -1904,16 +2033,6 @@ button.cabinet-account-avatar:hover {
 .cabinet-metric--clickable:hover {
   border-color: color-mix(in srgb, var(--color-signal) 40%, var(--color-rule));
   box-shadow: 0 8px 24px rgb(45 50 58 / 0.06);
-}
-
-.cabinet-metric--clickable:focus-visible {
-  outline: 3px solid var(--app-focus-outline);
-  outline-offset: 0;
-}
-
-.cabinet-metric--active {
-  border-color: color-mix(in srgb, var(--color-signal) 55%, var(--color-rule));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-signal) 14%, transparent);
 }
 
 .cabinet-line-chart-area {
@@ -1985,11 +2104,6 @@ button.cabinet-account-avatar:hover {
   border-color: color-mix(in srgb, var(--color-signal) 40%, var(--color-rule));
 }
 
-.cabinet-metric-chart--active {
-  border-color: color-mix(in srgb, var(--color-signal) 55%, var(--color-rule));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-signal) 14%, transparent);
-}
-
 .cabinet-metric-chart-select {
   display: flex;
   width: 100%;
@@ -2002,11 +2116,6 @@ button.cabinet-account-avatar:hover {
   text-align: left;
   cursor: pointer;
   border-radius: 10px;
-}
-
-.cabinet-metric-chart-select:focus-visible {
-  outline: 3px solid var(--app-focus-outline);
-  outline-offset: 2px;
 }
 
 .cabinet-metric-chart-top {
@@ -2126,11 +2235,6 @@ button.cabinet-account-avatar:hover {
 
 .cabinet-panel-action:hover {
   color: var(--color-signal);
-}
-
-.cabinet-panel-action:focus-visible {
-  outline: 3px solid var(--app-focus-outline);
-  outline-offset: 0;
 }
 
 .cabinet-empty {
@@ -2301,11 +2405,6 @@ button.cabinet-list-card:hover {
   background: color-mix(in srgb, var(--color-signal) 3%, #fff);
 }
 
-button.cabinet-list-card:focus-visible {
-  outline: 3px solid var(--app-focus-outline);
-  outline-offset: 0;
-}
-
 .dark .cabinet-list-card {
   background: #151616;
   border-color: #2a2c2c;
@@ -2384,4 +2483,89 @@ button.cabinet-list-card:focus-visible {
   color: #e11d48 !important;
   box-shadow: none !important;
   border-color: transparent !important;
+}
+
+/*
+ * Focus cascade anchor — last so it beats component resting styles
+ * (e.g. filter-dropdown outline:none) and HeroUI defaults.
+ */
+:is(
+  .input,
+  .textarea,
+  .filter-dropdown-trigger,
+  .dropdown__trigger,
+  .date-range-picker__trigger,
+  .list-search,
+  .filters-bar-burger,
+  .image-drop-area,
+  .period-filter-chip,
+  .button,
+  .cabinet-nav-link,
+  .cabinet-metric-select,
+  .cabinet-metric-expand,
+  .cabinet-metric-chart-select,
+  .cabinet-metric--clickable,
+  .cabinet-panel-action,
+  .auth-switch-link,
+  .settings-avatar-btn,
+  .settings-name-btn,
+  .filter-field-icon--btn,
+  button.cabinet-list-card,
+  .cabinet-company,
+  .cabinet-collapse-btn,
+  .cabinet-account,
+  .cabinet-account-more,
+  .cabinet-account-avatar,
+  .modal__close-button,
+  .close-button
+):is(:focus, :focus-visible, [data-focused="true"], [data-focus-visible="true"]),
+:is(.filter-dropdown-trigger, .dropdown__trigger, .date-range-picker__trigger):is(
+  [data-open="true"],
+  [aria-expanded="true"]
+),
+.list-search:focus-within,
+.input-group:focus-within,
+.input-group[data-focus-within="true"],
+.text-field[data-focus-within="true"] .input,
+.textfield[data-focus-within="true"] .input {
+  border-color: var(--app-focus-border) !important;
+  outline: 3px solid var(--app-focus-outline) !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Aside chrome: kill UA/WebKit blue focus on native buttons */
+.cabinet-aside button,
+.cabinet-aside [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.cabinet-aside button:focus,
+.cabinet-aside button:focus-visible,
+.cabinet-aside [role="button"]:focus,
+.cabinet-aside [role="button"]:focus-visible {
+  outline: 3px solid var(--app-focus-outline) !important;
+  outline-color: var(--app-focus-outline) !important;
+  outline-style: solid !important;
+  outline-width: 3px !important;
+  outline-offset: 0 !important;
+  border-color: var(--app-focus-border) !important;
+  box-shadow: none !important;
+}
+
+/* Stronger kill for WebKit system focus ring */
+.cabinet-collapse-btn:focus,
+.cabinet-collapse-btn:focus-visible,
+.cabinet-company:focus,
+.cabinet-company:focus-visible,
+.cabinet-account-more:focus,
+.cabinet-account-more:focus-visible,
+.cabinet-account-avatar:focus,
+.cabinet-account-avatar:focus-visible {
+  outline: 3px solid var(--app-focus-outline) !important;
+  outline-style: solid !important;
+  outline-offset: 0 !important;
+  border-color: var(--app-focus-border) !important;
+  box-shadow: 0 0 0 3px var(--app-focus-outline) !important;
 }

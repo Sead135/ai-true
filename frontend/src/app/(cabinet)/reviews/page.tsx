@@ -85,7 +85,7 @@ export default function ReviewsPage() {
             <p>Фильтры по рейтингу и статусу обработки</p>
           </div>
           <FiltersBar
-            className="reviews-page-filters filters-bar--single-row"
+            className="reviews-page-filters"
             values={{ branchId, rating, status, from, to }}
             defaults={{
               branchId: "",
