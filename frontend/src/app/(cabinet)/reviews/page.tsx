@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { DateRangeFilter } from "@/components/cabinet/date-range-filter";
 import { FilterComboBox } from "@/components/cabinet/filter-combo-box";
 import { IconStar, IconStatus } from "@/components/cabinet/filter-icons";
 import { FiltersBar } from "@/components/cabinet/filters-bar";
-import { ListPagination } from "@/components/cabinet/list-pagination";
+import { ListPagination, type PageSize } from "@/components/cabinet/list-pagination";
 import { IconBranch } from "@/components/cabinet/nav-icons";
 import { RatingStars } from "@/components/cabinet/rating-stars";
 import { ListCardSkeleton } from "@/components/cabinet/skeletons";
-import { listBranches, type Branch } from "@/lib/branches";
+import { errMessage } from "@/lib/api";
+import { listBranches } from "@/lib/branches";
 import { rangeForPreset } from "@/lib/dates";
+import { qk } from "@/lib/query-keys";
 import { listReviews, type Review } from "@/lib/reviews";
-import { parseLimit, parsePage, useUrlQuery } from "@/lib/use-url-query";
 
 const STATUS_LABEL: Record<Review["status"], string> = {
   new: "Новый",
@@ -21,62 +23,37 @@ const STATUS_LABEL: Record<Review["status"], string> = {
 
 export default function ReviewsPage() {
   const month = useMemo(() => rangeForPreset("month"), []);
-  const [query, setQuery] = useUrlQuery({
-    from: month.from,
-    to: month.to,
-    branchId: "",
-    rating: "",
-    status: "",
-    page: "1",
-    limit: "10",
+  const [from, setFrom] = useState(month.from);
+  const [to, setTo] = useState(month.to);
+  const [branchId, setBranchId] = useState("");
+  const [rating, setRating] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState<PageSize>(10);
+  const reviewParams = {
+    from,
+    to,
+    branchId: branchId || undefined,
+    rating: rating ? Number(rating) : undefined,
+    status: (status as "new" | "processed") || undefined,
+    page,
+    limit,
+  };
+
+  const branchesQuery = useQuery({
+    queryKey: qk.branches.options,
+    queryFn: async () => (await listBranches({ limit: 100 })).items,
   });
-  const from = query.from;
-  const to = query.to;
-  const branchId = query.branchId;
-  const rating = query.rating;
-  const status = query.status;
-  const page = parsePage(query.page);
-  const limit = parseLimit(query.limit);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [items, setItems] = useState<Review[] | null>(null);
-  const [total, setTotal] = useState(0);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    listBranches({ limit: 100 })
-      .then((res) => setBranches(res.items))
-      .catch(() => setBranches([]));
-  }, []);
+  const reviewsQuery = useQuery({
+    queryKey: qk.reviews.list(reviewParams),
+    queryFn: () => listReviews(reviewParams),
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    setError(null);
-    listReviews({
-      from,
-      to,
-      branchId: branchId || undefined,
-      rating: rating ? Number(rating) : undefined,
-      status: (status as "new" | "processed") || undefined,
-      page,
-      limit,
-    })
-      .then((res) => {
-        if (cancelled) {
-          return;
-        }
-        setItems(res.items);
-        setTotal(res.total);
-      })
-      .catch((err: { message?: string }) => {
-        if (!cancelled) {
-          setError(err.message ?? "Ошибка");
-          setItems((prev) => prev ?? []);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [from, to, branchId, rating, status, page, limit]);
+  const branches = branchesQuery.data ?? [];
+  const items = reviewsQuery.data?.items;
+  const total = reviewsQuery.data?.total ?? 0;
+  const error = reviewsQuery.error ? errMessage(reviewsQuery.error, "Ошибка") : null;
 
   return (
     <div>
@@ -97,14 +74,12 @@ export default function ReviewsPage() {
               to: month.to,
             }}
             onChange={(next) => {
-              setQuery({
-                branchId: next.branchId,
-                rating: next.rating,
-                status: next.status,
-                from: next.from,
-                to: next.to,
-                page: "1",
-              });
+              setBranchId(next.branchId);
+              setRating(next.rating);
+              setStatus(next.status);
+              setFrom(next.from);
+              setTo(next.to);
+              setPage(1);
             }}
           >
             {({ values, set, patch }) => (
@@ -203,8 +178,11 @@ export default function ReviewsPage() {
         page={page}
         limit={limit}
         total={total}
-        onPageChange={(next) => setQuery({ page: String(next) })}
-        onLimitChange={(next) => setQuery({ limit: String(next), page: "1" })}
+        onPageChange={setPage}
+        onLimitChange={(next) => {
+          setLimit(next);
+          setPage(1);
+        }}
       />
     </div>
   );

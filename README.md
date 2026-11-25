@@ -6,12 +6,12 @@
 
 ## Стек
 
-| Слой     | Технологии                                              |
-| -------- | ------------------------------------------------------- |
-| Frontend | Next.js 16, React 19, Tailwind 4, HeroUI                |
-| Backend  | NestJS 12, Drizzle ORM, JWT (httpOnly cookies), Swagger |
-| БД       | PostgreSQL 17 (Docker локально / Neon удалённо)         |
-| Качество | oxlint, oxfmt, Vitest, lefthook                         |
+| Слой     | Технологии                                               |
+| -------- | -------------------------------------------------------- |
+| Frontend | Next.js 16, React 19, Tailwind 4, HeroUI, TanStack Query |
+| Backend  | NestJS 12, Drizzle ORM, JWT (httpOnly cookies), Swagger  |
+| БД       | PostgreSQL 17 (Docker локально / Neon удалённо)          |
+| Качество | oxlint, oxfmt, Vitest, lefthook                          |
 
 ## Структура
 

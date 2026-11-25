@@ -3,7 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { CabinetShell } from "@/components/cabinet/cabinet-shell";
-import { CabinetShellSkeleton, pageSkeletonForPath } from "@/components/cabinet/skeletons";
+import { pageSkeletonForPath } from "@/components/cabinet/skeletons";
+import { PageTransitionScreen } from "@/components/page-transition";
 import { fetchMe, type Me } from "@/lib/auth";
 
 type CabinetLayoutProps = {
@@ -17,29 +18,31 @@ export default function CabinetLayout({ children }: CabinetLayoutProps) {
 
   useEffect(() => {
     let cancelled = false;
+    const next = `${pathname}${window.location.search}`;
+    const goLogin = () => router.replace(`/login?next=${encodeURIComponent(next)}`);
     fetchMe()
       .then((user) => {
         if (cancelled) {
           return;
         }
         if (!user) {
-          router.replace("/login");
+          goLogin();
           return;
         }
         setMe(user);
       })
       .catch(() => {
         if (!cancelled) {
-          router.replace("/login");
+          goLogin();
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, pathname]);
 
   if (me === undefined) {
-    return <CabinetShellSkeleton>{pageSkeletonForPath(pathname)}</CabinetShellSkeleton>;
+    return <PageTransitionScreen />;
   }
 
   if (!me) {

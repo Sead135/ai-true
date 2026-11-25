@@ -1,19 +1,21 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useEditModals } from "@/components/cabinet/edit-modals-context";
 import { FilterComboBox } from "@/components/cabinet/filter-combo-box";
 import { IconRole } from "@/components/cabinet/filter-icons";
 import { FiltersBar } from "@/components/cabinet/filters-bar";
-import { ListPagination } from "@/components/cabinet/list-pagination";
+import { ListPagination, type PageSize } from "@/components/cabinet/list-pagination";
 import { ListSearch } from "@/components/cabinet/list-search";
 import { IconBuilding } from "@/components/cabinet/nav-icons";
 import { useSession } from "@/components/cabinet/session-context";
 import { ListCardSkeleton } from "@/components/cabinet/skeletons";
 import { usePageTransition } from "@/components/page-transition";
-import { listCompanies, type Company } from "@/lib/companies";
+import { errMessage } from "@/lib/api";
+import { listCompanies } from "@/lib/companies";
+import { qk } from "@/lib/query-keys";
 import { listUsers, type UserRow } from "@/lib/users";
-import { parseLimit, parsePage, useUrlQuery } from "@/lib/use-url-query";
 
 const ROLE_LABEL: Record<UserRow["role"], string> = {
   admin: "Админ",
@@ -23,68 +25,46 @@ const ROLE_LABEL: Record<UserRow["role"], string> = {
 export default function UsersPage() {
   const { me } = useSession();
   const { navigate } = usePageTransition();
-  const { openUser, revision } = useEditModals();
-  const [query, setQuery] = useUrlQuery({
-    q: "",
-    role: "",
-    companyId: "",
-    page: "1",
-    limit: "10",
-  });
-  const search = query.q;
-  const role = query.role;
-  const companyId = query.companyId;
-  const page = parsePage(query.page);
-  const limit = parseLimit(query.limit);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [items, setItems] = useState<UserRow[] | null>(null);
-  const [total, setTotal] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (me.role !== "admin") {
-      return;
-    }
-    listCompanies({ limit: 100 })
-      .then((res) => setCompanies(res.items))
-      .catch(() => setCompanies([]));
-  }, [me.role]);
+  const { openUser } = useEditModals();
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState("");
+  const [companyId, setCompanyId] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState<PageSize>(10);
+  const userParams = {
+    q: search || undefined,
+    role: (role as "admin" | "client") || undefined,
+    companyId: companyId || undefined,
+    page,
+    limit,
+  };
 
   useEffect(() => {
     if (me.role !== "admin") {
       navigate("/");
-      return;
     }
-    let cancelled = false;
-    setError(null);
-    listUsers({
-      q: search || undefined,
-      role: (role as "admin" | "client") || undefined,
-      companyId: companyId || undefined,
-      page,
-      limit,
-    })
-      .then((res) => {
-        if (cancelled) {
-          return;
-        }
-        setItems(res.items);
-        setTotal(res.total);
-      })
-      .catch((err: { message?: string }) => {
-        if (!cancelled) {
-          setError(err.message ?? "Ошибка");
-          setItems((prev) => prev ?? []);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [me.role, navigate, search, role, companyId, page, limit, revision]);
+  }, [me.role, navigate]);
+
+  const companiesQuery = useQuery({
+    queryKey: qk.companies.options,
+    queryFn: async () => (await listCompanies({ limit: 100 })).items,
+    enabled: me.role === "admin",
+  });
+
+  const usersQuery = useQuery({
+    queryKey: qk.users.list(userParams),
+    queryFn: () => listUsers(userParams),
+    enabled: me.role === "admin",
+  });
 
   if (me.role !== "admin") {
     return null;
   }
+
+  const companies = companiesQuery.data ?? [];
+  const items = usersQuery.data?.items;
+  const total = usersQuery.data?.total ?? 0;
+  const error = usersQuery.error ? errMessage(usersQuery.error, "Ошибка") : null;
 
   return (
     <div>
@@ -98,13 +78,18 @@ export default function UsersPage() {
         values={{ role, companyId }}
         defaults={{ role: "", companyId: "" }}
         onChange={(next) => {
-          setQuery({ role: next.role, companyId: next.companyId, page: "1" });
+          setRole(next.role);
+          setCompanyId(next.companyId);
+          setPage(1);
         }}
         search={
           <ListSearch
             value={search}
             placeholder="Email или имя"
-            onChange={(v) => setQuery({ q: v, page: "1" })}
+            onChange={(v) => {
+              setSearch(v);
+              setPage(1);
+            }}
           />
         }
       >
@@ -195,8 +180,11 @@ export default function UsersPage() {
         page={page}
         limit={limit}
         total={total}
-        onPageChange={(next) => setQuery({ page: String(next) })}
-        onLimitChange={(next) => setQuery({ limit: String(next), page: "1" })}
+        onPageChange={setPage}
+        onLimitChange={(next) => {
+          setLimit(next);
+          setPage(1);
+        }}
       />
     </div>
   );

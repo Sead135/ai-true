@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { type AuthError, login, register } from "@/lib/auth";
 import { markOnboardingPending } from "@/lib/onboarding";
@@ -12,8 +13,16 @@ type AuthFormProps = {
   mode: Mode;
 };
 
+function safeNext(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) {
+    return "/";
+  }
+  return raw;
+}
+
 export function AuthForm({ mode }: AuthFormProps) {
   const { navigate } = usePageTransition();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -37,7 +46,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         await register(email, password);
         markOnboardingPending();
       }
-      navigate("/", { overlay: true });
+      navigate(mode === "login" ? safeNext(searchParams.get("next")) : "/", { overlay: true });
     } catch (err) {
       const authErr = err as AuthError;
       setError(authErr.message ?? "Не удалось выполнить запрос");

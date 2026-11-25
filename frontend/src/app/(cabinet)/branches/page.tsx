@@ -1,76 +1,54 @@
 "use client";
 
 import { Button } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { useEditModals } from "@/components/cabinet/edit-modals-context";
 import { FilterComboBox } from "@/components/cabinet/filter-combo-box";
 import { IconPlus, IconStatus } from "@/components/cabinet/filter-icons";
 import { FiltersBar } from "@/components/cabinet/filters-bar";
-import { ListPagination } from "@/components/cabinet/list-pagination";
+import { ListPagination, type PageSize } from "@/components/cabinet/list-pagination";
 import { ListSearch } from "@/components/cabinet/list-search";
 import { IconBuilding } from "@/components/cabinet/nav-icons";
 import { useSession } from "@/components/cabinet/session-context";
 import { ListCardSkeleton } from "@/components/cabinet/skeletons";
-import { listBranches, type Branch } from "@/lib/branches";
-import { listCompanies, type Company } from "@/lib/companies";
-import { parseLimit, parsePage, useUrlQuery } from "@/lib/use-url-query";
+import { errMessage } from "@/lib/api";
+import { listBranches } from "@/lib/branches";
+import { listCompanies } from "@/lib/companies";
+import { qk } from "@/lib/query-keys";
 
 export default function BranchesPage() {
   const { me } = useSession();
-  const { openBranch, revision } = useEditModals();
-  const [query, setQuery] = useUrlQuery({
-    q: "",
-    status: "",
-    companyId: "",
-    page: "1",
-    limit: "10",
+  const { openBranch } = useEditModals();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [companyId, setCompanyId] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState<PageSize>(10);
+
+  const branchParams = {
+    q: search || undefined,
+    status: (status as "active" | "inactive") || undefined,
+    companyId: me.role === "admin" && companyId ? companyId : undefined,
+    page,
+    limit,
+  };
+
+  const companiesQuery = useQuery({
+    queryKey: qk.companies.options,
+    queryFn: async () => (await listCompanies({ limit: 100 })).items,
+    enabled: me.role === "admin",
   });
-  const search = query.q;
-  const status = query.status;
-  const companyId = query.companyId;
-  const page = parsePage(query.page);
-  const limit = parseLimit(query.limit);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [items, setItems] = useState<Branch[] | null>(null);
-  const [total, setTotal] = useState(0);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (me.role !== "admin") {
-      return;
-    }
-    listCompanies({ limit: 100 })
-      .then((res) => setCompanies(res.items))
-      .catch(() => setCompanies([]));
-  }, [me.role]);
+  const branchesQuery = useQuery({
+    queryKey: qk.branches.list(branchParams),
+    queryFn: () => listBranches(branchParams),
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    setError(null);
-    listBranches({
-      q: search || undefined,
-      status: (status as "active" | "inactive") || undefined,
-      companyId: me.role === "admin" && companyId ? companyId : undefined,
-      page,
-      limit,
-    })
-      .then((res) => {
-        if (cancelled) {
-          return;
-        }
-        setItems(res.items);
-        setTotal(res.total);
-      })
-      .catch((err: { message?: string }) => {
-        if (!cancelled) {
-          setError(err.message ?? "Ошибка");
-          setItems((prev) => prev ?? []);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [me.role, search, status, companyId, page, limit, revision]);
+  const companies = companiesQuery.data ?? [];
+  const items = branchesQuery.data?.items;
+  const total = branchesQuery.data?.total ?? 0;
+  const error = branchesQuery.error ? errMessage(branchesQuery.error, "Ошибка") : null;
 
   return (
     <div>
@@ -100,17 +78,18 @@ export default function BranchesPage() {
         values={{ status, companyId }}
         defaults={{ status: "", companyId: "" }}
         onChange={(next) => {
-          setQuery({
-            status: next.status,
-            companyId: next.companyId,
-            page: "1",
-          });
+          setStatus(next.status);
+          setCompanyId(next.companyId);
+          setPage(1);
         }}
         search={
           <ListSearch
             value={search}
             placeholder="Название, город или адрес"
-            onChange={(v) => setQuery({ q: v, page: "1" })}
+            onChange={(v) => {
+              setSearch(v);
+              setPage(1);
+            }}
           />
         }
       >
@@ -189,8 +168,11 @@ export default function BranchesPage() {
         page={page}
         limit={limit}
         total={total}
-        onPageChange={(next) => setQuery({ page: String(next) })}
-        onLimitChange={(next) => setQuery({ limit: String(next), page: "1" })}
+        onPageChange={setPage}
+        onLimitChange={(next) => {
+          setLimit(next);
+          setPage(1);
+        }}
       />
     </div>
   );

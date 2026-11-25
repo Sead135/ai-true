@@ -1,8 +1,10 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { listCompanies, type Company } from "@/lib/companies";
+import { listCompanies } from "@/lib/companies";
+import { qk } from "@/lib/query-keys";
 import { BrandLogo } from "../brand-logo";
 import { ThemeToggle } from "../theme-toggle";
 import { AccountMenu } from "./account-menu";
@@ -22,8 +24,7 @@ type AsideNavProps = {
 export function AsideNav({ mobileOpen, onMobileOpenChange }: AsideNavProps) {
   const { me } = useSession();
   const pathname = usePathname();
-  const { openCompany, revision } = useEditModals();
-  const [company, setCompany] = useState<Company | null | undefined>(undefined);
+  const { openCompany } = useEditModals();
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -34,6 +35,13 @@ export function AsideNav({ mobileOpen, onMobileOpenChange }: AsideNavProps) {
       return false;
     }
   });
+
+  const companyQuery = useQuery({
+    queryKey: qk.companies.mine,
+    queryFn: async () => (await listCompanies({ limit: 1 })).items[0] ?? null,
+    enabled: me.role === "client",
+  });
+  const company = companyQuery.isPending ? undefined : (companyQuery.data ?? null);
 
   useEffect(() => {
     onMobileOpenChange(false);
@@ -49,27 +57,6 @@ export function AsideNav({ mobileOpen, onMobileOpenChange }: AsideNavProps) {
       document.body.style.overflow = prev;
     };
   }, [mobileOpen]);
-
-  useEffect(() => {
-    if (me.role !== "client") {
-      return;
-    }
-    let cancelled = false;
-    listCompanies({ limit: 1 })
-      .then((res) => {
-        if (!cancelled) {
-          setCompany(res.items[0] ?? null);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setCompany(null);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [me.role, revision]);
 
   function toggleCollapsed() {
     setCollapsed((prev) => {

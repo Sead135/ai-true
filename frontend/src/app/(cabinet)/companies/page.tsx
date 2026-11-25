@@ -1,56 +1,45 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useEditModals } from "@/components/cabinet/edit-modals-context";
-import { ListPagination } from "@/components/cabinet/list-pagination";
+import { ListPagination, type PageSize } from "@/components/cabinet/list-pagination";
 import { ListSearch } from "@/components/cabinet/list-search";
 import { useSession } from "@/components/cabinet/session-context";
 import { ListCardSkeleton } from "@/components/cabinet/skeletons";
 import { usePageTransition } from "@/components/page-transition";
-import { listCompanies, type Company } from "@/lib/companies";
-import { parseLimit, parsePage, useUrlQuery } from "@/lib/use-url-query";
+import { errMessage } from "@/lib/api";
+import { listCompanies } from "@/lib/companies";
+import { qk } from "@/lib/query-keys";
 
 export default function CompaniesPage() {
   const { me } = useSession();
   const { navigate } = usePageTransition();
-  const { openCompany, revision } = useEditModals();
-  const [query, setQuery] = useUrlQuery({ q: "", page: "1", limit: "10" });
-  const search = query.q;
-  const page = parsePage(query.page);
-  const limit = parseLimit(query.limit);
-  const [items, setItems] = useState<Company[] | null>(null);
-  const [total, setTotal] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const { openCompany } = useEditModals();
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState<PageSize>(10);
+  const params = { q: search || undefined, page, limit };
 
   useEffect(() => {
     if (me.role !== "admin") {
       navigate("/");
-      return;
     }
-    let cancelled = false;
-    setError(null);
-    listCompanies({ q: search || undefined, page, limit })
-      .then((res) => {
-        if (cancelled) {
-          return;
-        }
-        setItems(res.items);
-        setTotal(res.total);
-      })
-      .catch((err: { message?: string }) => {
-        if (!cancelled) {
-          setError(err.message ?? "Ошибка");
-          setItems((prev) => prev ?? []);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [me.role, navigate, search, page, limit, revision]);
+  }, [me.role, navigate]);
+
+  const { data, error: queryError } = useQuery({
+    queryKey: qk.companies.list(params),
+    queryFn: () => listCompanies(params),
+    enabled: me.role === "admin",
+  });
 
   if (me.role !== "admin") {
     return null;
   }
+
+  const items = data?.items;
+  const total = data?.total ?? 0;
+  const error = queryError ? errMessage(queryError, "Ошибка") : null;
 
   return (
     <div>
@@ -63,7 +52,10 @@ export default function CompaniesPage() {
         <ListSearch
           value={search}
           placeholder="Название, город или email"
-          onChange={(v) => setQuery({ q: v, page: "1" })}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
         />
       </div>
 
@@ -116,8 +108,11 @@ export default function CompaniesPage() {
         page={page}
         limit={limit}
         total={total}
-        onPageChange={(next) => setQuery({ page: String(next) })}
-        onLimitChange={(next) => setQuery({ limit: String(next), page: "1" })}
+        onPageChange={setPage}
+        onLimitChange={(next) => {
+          setLimit(next);
+          setPage(1);
+        }}
       />
     </div>
   );

@@ -3,6 +3,9 @@ export type ApiError = {
   message: string;
 };
 
+export const errMessage = (err: unknown, fallback: string) =>
+  (err as { message?: string })?.message || fallback;
+
 export type PageResult<T> = {
   items: T[];
   total: number;

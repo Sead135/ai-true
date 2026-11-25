@@ -26,6 +26,24 @@ export function usePageTransition() {
 
 const MIN_VISIBLE_MS = 520;
 
+type PageTransitionScreenProps = {
+  exiting?: boolean;
+};
+
+export function PageTransitionScreen({ exiting = false }: PageTransitionScreenProps) {
+  return (
+    <div
+      className={`page-transition${exiting ? " page-transition--out" : ""}`}
+      role="status"
+      aria-live="polite"
+      aria-label="Загрузка"
+    >
+      <BrandLogo className="h-9 w-auto" />
+      <Spinner size="lg" color="accent" className="mt-8" />
+    </div>
+  );
+}
+
 type PageTransitionProviderProps = {
   children: React.ReactNode;
 };
@@ -96,17 +114,7 @@ export function PageTransitionProvider({ children }: PageTransitionProviderProps
   return (
     <TransitionCtx.Provider value={{ navigate }}>
       {children}
-      {visible ? (
-        <div
-          className={`page-transition${exiting ? " page-transition--out" : ""}`}
-          role="status"
-          aria-live="polite"
-          aria-label="Загрузка"
-        >
-          <BrandLogo className="h-9 w-auto" />
-          <Spinner size="lg" color="accent" className="mt-8" />
-        </div>
-      ) : null}
+      {visible ? <PageTransitionScreen exiting={exiting} /> : null}
     </TransitionCtx.Provider>
   );
 }

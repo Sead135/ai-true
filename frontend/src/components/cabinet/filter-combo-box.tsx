@@ -88,13 +88,16 @@ export function FilterComboBox({
         >
           <Dropdown.Menu
             selectionMode="single"
+            disallowEmptySelection
             selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
             onSelectionChange={(keys: Selection) => {
               if (keys === "all") {
                 return;
               }
               const next = String([...keys][0] ?? "");
+              // Empty set = clear → default "all" option
               if (!next) {
+                onChange("");
                 return;
               }
               onChange(next === EMPTY ? "" : next);

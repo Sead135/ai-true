@@ -1,15 +1,17 @@
 "use client";
 
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { toast } from "@heroui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { errMessage } from "@/lib/api";
 import { rangeForPreset } from "@/lib/dates";
+import { qk } from "@/lib/query-keys";
 import {
   type AdminMetric,
   type AdminSeriesPoint,
   fetchAdminSeries,
   fetchAdminSummary,
-  type AdminSummary,
 } from "@/lib/stats";
-import { toast } from "@heroui/react";
 import { DayBars } from "./day-bars";
 import { MetricChartCard } from "./metric-chart-card";
 import { MetricChartModal } from "./metric-chart-modal";
@@ -30,53 +32,37 @@ export function AdminDashboard() {
   const month = useMemo(() => rangeForPreset("month"), []);
   const [from, setFrom] = useState(month.from);
   const [to, setTo] = useState(month.to);
-  const [summary, setSummary] = useState<AdminSummary | null>(null);
-  const [seriesMap, setSeriesMap] = useState<Partial<Record<AdminMetric, AdminSeriesPoint[]>>>({});
   const [chartMetric, setChartMetric] = useState<AdminMetric>("views");
   const [modalMetric, setModalMetric] = useState<AdminMetric | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchAdminSummary()
-      .then((data) => {
-        if (!cancelled) {
-          setSummary(data);
-        }
-      })
-      .catch((err: { message?: string }) => {
-        if (!cancelled) {
-          toast.danger(err.message ?? "Ошибка загрузки");
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const summaryQuery = useQuery({
+    queryKey: qk.stats.adminSummary,
+    queryFn: fetchAdminSummary,
+  });
 
+  const seriesQueries = useQueries({
+    queries: ORDER.map((metric) => ({
+      queryKey: qk.stats.adminSeries({ metric, from, to }),
+      queryFn: async () => (await fetchAdminSeries({ metric, from, to })).series,
+    })),
+  });
+
+  const seriesError = seriesQueries.find((q) => q.isError)?.error;
   useEffect(() => {
-    let cancelled = false;
-    setSeriesMap({});
-    Promise.all(
-      ORDER.map(async (metric) => {
-        const res = await fetchAdminSeries({ metric, from, to });
-        return [metric, res.series] as const;
-      }),
-    )
-      .then((entries) => {
-        if (cancelled) {
-          return;
-        }
-        setSeriesMap(Object.fromEntries(entries));
-      })
-      .catch((err: { message?: string }) => {
-        if (!cancelled) {
-          toast.danger(err.message ?? "Ошибка графиков");
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [from, to]);
+    if (summaryQuery.error) {
+      toast.danger(errMessage(summaryQuery.error, "Ошибка загрузки"));
+    } else if (seriesError) {
+      toast.danger(errMessage(seriesError, "Ошибка графиков"));
+    }
+  }, [summaryQuery.error, seriesError]);
+
+  const seriesMap: Partial<Record<AdminMetric, AdminSeriesPoint[]>> = {};
+  ORDER.forEach((metric, i) => {
+    const data = seriesQueries[i]?.data;
+    if (data) {
+      seriesMap[metric] = data;
+    }
+  });
 
   const loadModal = useCallback(
     async (rangeFrom: string, rangeTo: string) => {
@@ -93,6 +79,7 @@ export function AdminDashboard() {
     [modalMetric],
   );
 
+  const summary = summaryQuery.data ?? null;
   const mainSeries = seriesMap[chartMetric] ?? null;
   const ready = summary !== null && ORDER.every((key) => seriesMap[key] !== undefined);
 

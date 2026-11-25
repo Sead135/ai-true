@@ -428,7 +428,8 @@ button:disabled {
     color: var(--field-foreground);
     padding-inline: 0.95rem;
     padding-block: 0;
-    font-size: 0.9375rem;
+    /* ≥16px: Safari iOS won't auto-zoom on focus */
+    font-size: 1rem;
     box-shadow: none !important;
     transition:
       border-color 160ms ease,
@@ -2585,6 +2586,26 @@ button.cabinet-list-card:hover {
   outline: 3px solid var(--app-focus-outline) !important;
   outline-offset: 0 !important;
   box-shadow: none !important;
+}
+
+/*
+ * iOS Safari zooms any focused field with font-size < 16px and often
+ * keeps that zoom after navigation (e.g. login → cabinet). Force 16px
+ * on phones so the page never leaves scale 1.
+ */
+@media (max-width: 767px) {
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(
+        [type="button"]
+      ):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="hidden"]),
+    textarea,
+    select,
+    .input,
+    .textarea,
+    .list-search-input
+  ) {
+    font-size: 16px !important;
+  }
 }
 
 /* Aside chrome: kill UA/WebKit blue focus on native buttons */

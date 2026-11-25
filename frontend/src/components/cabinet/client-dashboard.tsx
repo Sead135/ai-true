@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { listBranches, type Branch } from "@/lib/branches";
-import { rangeForPreset } from "@/lib/dates";
-import { fetchStats, type StatsResponse, type StatsTotals } from "@/lib/stats";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "@heroui/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { errMessage } from "@/lib/api";
+import { listBranches } from "@/lib/branches";
+import { rangeForPreset } from "@/lib/dates";
+import { qk } from "@/lib/query-keys";
+import { fetchStats, type StatsTotals } from "@/lib/stats";
 import { DayBars } from "./day-bars";
 import { FilterComboBox } from "./filter-combo-box";
 import { FiltersBar } from "./filters-bar";
@@ -39,34 +42,29 @@ export function ClientDashboard() {
   const [from, setFrom] = useState(month.from);
   const [to, setTo] = useState(month.to);
   const [branchId, setBranchId] = useState("");
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [data, setData] = useState<StatsResponse | null>(null);
   const [chartMetric, setChartMetric] = useState<ClientMetric>("views");
   const [modalMetric, setModalMetric] = useState<ClientMetric | null>(null);
 
-  useEffect(() => {
-    listBranches({ limit: 100 })
-      .then((res) => setBranches(res.items))
-      .catch(() => setBranches([]));
-  }, []);
+  const statsParams = { from, to, branchId: branchId || undefined };
+
+  const branchesQuery = useQuery({
+    queryKey: qk.branches.options,
+    queryFn: async () => (await listBranches({ limit: 100 })).items,
+  });
+
+  const statsQuery = useQuery({
+    queryKey: qk.stats.client(statsParams),
+    queryFn: () => fetchStats(statsParams),
+  });
 
   useEffect(() => {
-    let cancelled = false;
-    fetchStats({ from, to, branchId: branchId || undefined })
-      .then((res) => {
-        if (!cancelled) {
-          setData(res);
-        }
-      })
-      .catch((err: { message?: string }) => {
-        if (!cancelled) {
-          toast.danger(err.message ?? "Ошибка загрузки");
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [from, to, branchId]);
+    if (statsQuery.error) {
+      toast.danger(errMessage(statsQuery.error, "Ошибка загрузки"));
+    }
+  }, [statsQuery.error]);
+
+  const branches = branchesQuery.data ?? [];
+  const data = statsQuery.data;
 
   const seriesFor = useCallback(
     (key: ClientMetric) => (data?.series ?? []).map((p) => ({ date: p.date, value: p[key] })),

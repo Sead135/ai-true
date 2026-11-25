@@ -1,7 +1,9 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, useContext, useMemo, useState } from "react";
 import { listCompanies } from "@/lib/companies";
+import { qk } from "@/lib/query-keys";
 import { BranchEditModal } from "./branch-edit-modal";
 import { CompanyEditModal } from "./company-edit-modal";
 import { OnboardingWizard } from "./onboarding-wizard";
@@ -12,8 +14,6 @@ type EditModalsApi = {
   openCompany: (id: string | "new") => void;
   openBranch: (id: string | "new") => void;
   openUser: (id: string) => void;
-  /** Bumps when any entity is saved/deleted — lists can refetch. */
-  revision: number;
 };
 
 const EditModalsCtx = createContext<EditModalsApi | null>(null);
@@ -32,35 +32,17 @@ type EditModalsProviderProps = {
 
 export function EditModalsProvider({ children }: EditModalsProviderProps) {
   const { me } = useSession();
+  const qc = useQueryClient();
   const [companyTarget, setCompanyTarget] = useState<string | "new" | null>(null);
   const [branchTarget, setBranchTarget] = useState<string | "new" | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [clientCompanyId, setClientCompanyId] = useState<string | null>(null);
-  const [revision, setRevision] = useState(0);
 
-  const bump = useCallback(() => setRevision((n) => n + 1), []);
-
-  useEffect(() => {
-    if (me.role !== "client") {
-      setClientCompanyId(null);
-      return;
-    }
-    let cancelled = false;
-    listCompanies({ limit: 1 })
-      .then((page) => {
-        if (!cancelled) {
-          setClientCompanyId(page.items[0]?.id ?? null);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setClientCompanyId(null);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [me.role, revision]);
+  const { data: clientCompany = null } = useQuery({
+    queryKey: qk.companies.mine,
+    queryFn: async () => (await listCompanies({ limit: 1 })).items[0] ?? null,
+    enabled: me.role === "client",
+  });
+  const clientCompanyId = clientCompany?.id ?? null;
 
   const api = useMemo<EditModalsApi>(
     () => ({
@@ -73,9 +55,8 @@ export function EditModalsProvider({ children }: EditModalsProviderProps) {
         setBranchTarget(id);
       },
       openUser: (id) => setUserId(id),
-      revision,
     }),
-    [me.role, clientCompanyId, revision],
+    [me.role, clientCompanyId],
   );
 
   return (
@@ -86,26 +67,35 @@ export function EditModalsProvider({ children }: EditModalsProviderProps) {
         onClose={() => setCompanyTarget(null)}
         onSaved={(c) => {
           if (me.role === "client") {
-            setClientCompanyId(c.id);
+            qc.setQueryData(qk.companies.mine, c);
           }
-          bump();
+          void qc.invalidateQueries({ queryKey: qk.companies.all });
         }}
       />
       <BranchEditModal
         target={branchTarget}
         companyId={me.role === "client" ? clientCompanyId : undefined}
         onClose={() => setBranchTarget(null)}
-        onSaved={() => bump()}
+        onSaved={() => {
+          void qc.invalidateQueries({ queryKey: qk.branches.all });
+          void qc.invalidateQueries({ queryKey: qk.stats.all });
+        }}
       />
       {me.role === "admin" ? (
         <UserEditModal
           userId={userId}
           onClose={() => setUserId(null)}
-          onSaved={() => bump()}
-          onDeleted={() => bump()}
+          onSaved={() => void qc.invalidateQueries({ queryKey: qk.users.all })}
+          onDeleted={() => void qc.invalidateQueries({ queryKey: qk.users.all })}
         />
       ) : (
-        <OnboardingWizard onDone={bump} />
+        <OnboardingWizard
+          onDone={() => {
+            void qc.invalidateQueries({ queryKey: qk.companies.all });
+            void qc.invalidateQueries({ queryKey: qk.branches.all });
+            void qc.invalidateQueries({ queryKey: qk.stats.all });
+          }}
+        />
       )}
     </EditModalsCtx.Provider>
   );
