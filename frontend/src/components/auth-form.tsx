@@ -7,7 +7,11 @@ import { usePageTransition } from "./page-transition";
 
 type Mode = "login" | "register";
 
-export function AuthForm({ mode }: { mode: Mode }) {
+type AuthFormProps = {
+  mode: Mode;
+};
+
+export function AuthForm({ mode }: AuthFormProps) {
   const { navigate } = usePageTransition();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,8 +30,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
     setPending(true);
     try {
-      if (mode === "login") await login(email, password);
-      else await register(email, password);
+      if (mode === "login") {
+        await login(email, password);
+      } else {
+        await register(email, password);
+      }
       navigate("/", { overlay: true });
     } catch (err) {
       const authErr = err as AuthError;

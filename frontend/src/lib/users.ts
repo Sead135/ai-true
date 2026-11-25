@@ -1,5 +1,5 @@
-import type { Role } from "@ii/shared";
 import { api } from "./api";
+import type { Role } from "./auth";
 
 export type UserRow = {
   id: string;
@@ -28,19 +28,31 @@ export type UpdateUserInput = {
   password?: string;
 };
 
-export function listUsers(params: {
+export type ListUsersParams = {
   q?: string;
   role?: "admin" | "client";
   companyId?: string;
   page?: number;
   limit?: number;
-}) {
+};
+
+export function listUsers(params: ListUsersParams) {
   const q = new URLSearchParams();
-  if (params.q) q.set("q", params.q);
-  if (params.role) q.set("role", params.role);
-  if (params.companyId) q.set("companyId", params.companyId);
-  if (params.page) q.set("page", String(params.page));
-  if (params.limit) q.set("limit", String(params.limit));
+  if (params.q) {
+    q.set("q", params.q);
+  }
+  if (params.role) {
+    q.set("role", params.role);
+  }
+  if (params.companyId) {
+    q.set("companyId", params.companyId);
+  }
+  if (params.page) {
+    q.set("page", String(params.page));
+  }
+  if (params.limit) {
+    q.set("limit", String(params.limit));
+  }
   const qs = q.toString();
   return api<UsersPage>(`/users${qs ? `?${qs}` : ""}`);
 }

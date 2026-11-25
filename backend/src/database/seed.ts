@@ -10,7 +10,9 @@ import { branches, companies, dailyMetrics, reviews, users } from "./schema/inde
 
 for (const name of [".env", "../.env"] as const) {
   const path = resolve(process.cwd(), name);
-  if (existsSync(path)) loadEnvFile(path);
+  if (existsSync(path)) {
+    loadEnvFile(path);
+  }
 }
 
 const COMPANY_A = "11111111-1111-4111-8111-111111111111";
@@ -124,7 +126,11 @@ async function seed() {
 
     const branchIds = [BRANCH_A1, BRANCH_A2, BRANCH_B1];
 
-    const reviewRows = await new MockReviewsSource().fetchReviews(branchIds, fromStr, toStr);
+    const reviewRows = await new MockReviewsSource().fetchReviews({
+      branchIds,
+      from: fromStr,
+      to: toStr,
+    });
     await db.insert(reviews).values(
       reviewRows.map((r) => ({
         branchId: r.branchId,
@@ -138,7 +144,11 @@ async function seed() {
     );
 
     // metrics.reviewsCount/avgRating derived from the same mockReviewsForDay
-    const rows = await new MockStatsSource().fetchDaily(branchIds, fromStr, toStr);
+    const rows = await new MockStatsSource().fetchDaily({
+      branchIds,
+      from: fromStr,
+      to: toStr,
+    });
     await db.insert(dailyMetrics).values(
       rows.map((r) => ({
         branchId: r.branchId,

@@ -18,13 +18,19 @@ const TransitionCtx = createContext<TransitionApi | null>(null);
 
 export function usePageTransition() {
   const ctx = useContext(TransitionCtx);
-  if (!ctx) throw new Error("usePageTransition outside provider");
+  if (!ctx) {
+    throw new Error("usePageTransition outside provider");
+  }
   return ctx;
 }
 
 const MIN_VISIBLE_MS = 520;
 
-export function PageTransitionProvider({ children }: { children: React.ReactNode }) {
+type PageTransitionProviderProps = {
+  children: React.ReactNode;
+};
+
+export function PageTransitionProvider({ children }: PageTransitionProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
@@ -36,7 +42,9 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
   const hide = useCallback(() => {
     const elapsed = Date.now() - shownAt.current;
     const wait = Math.max(0, MIN_VISIBLE_MS - elapsed);
-    if (hideTimer.current) clearTimeout(hideTimer.current);
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+    }
     hideTimer.current = setTimeout(() => {
       setExiting(true);
       hideTimer.current = setTimeout(() => {
@@ -49,7 +57,9 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
 
   const navigate = useCallback(
     (href: string, options?: NavigateOptions) => {
-      if (href === pathname) return;
+      if (href === pathname) {
+        return;
+      }
       pendingHref.current = href;
       if (options?.overlay) {
         shownAt.current = Date.now();
@@ -62,7 +72,9 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
   );
 
   useEffect(() => {
-    if (!pendingHref.current) return;
+    if (!pendingHref.current) {
+      return;
+    }
     if (!visible) {
       pendingHref.current = null;
       return;
@@ -74,7 +86,9 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
 
   useEffect(() => {
     return () => {
-      if (hideTimer.current) clearTimeout(hideTimer.current);
+      if (hideTimer.current) {
+        clearTimeout(hideTimer.current);
+      }
     };
   }, []);
 

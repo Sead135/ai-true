@@ -12,7 +12,9 @@ export type IssuedTokens = {
 
 function ttlToMs(ttl: string, fallbackMs: number): number {
   const match = /^(\d+)([smhd])$/.exec(ttl.trim());
-  if (!match) return fallbackMs;
+  if (!match) {
+    return fallbackMs;
+  }
   const amount = Number(match[1]);
   const unit = match[2] as "s" | "m" | "h" | "d";
   const mult = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 }[unit];

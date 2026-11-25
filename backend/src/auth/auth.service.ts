@@ -13,7 +13,7 @@ import type { IssuedTokens } from "./auth-cookies";
 import type { AccessTokenPayload, RefreshTokenPayload } from "./auth.types";
 import type { MeDto } from "./dto/me.dto";
 import type { UpdateProfileDto } from "./dto/update-profile.dto";
-import { jwtTtl } from "./jwt-ttl";
+import type { JwtSignOptions } from "@nestjs/jwt";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
 import { users, type User } from "../database/schema/index";
@@ -89,13 +89,17 @@ export class AuthService {
 
   async me(actor: AccessTokenPayload): Promise<MeDto> {
     const user = await this.db.query.users.findFirst({ where: eq(users.id, actor.sub) });
-    if (!user) throw new NotFoundException("User not found");
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
     return toMe(user);
   }
 
   async updateProfile(actor: AccessTokenPayload, dto: UpdateProfileDto): Promise<MeDto> {
     const existing = await this.db.query.users.findFirst({ where: eq(users.id, actor.sub) });
-    if (!existing) throw new NotFoundException("User not found");
+    if (!existing) {
+      throw new NotFoundException("User not found");
+    }
 
     const [updated] = await this.db
       .update(users)
@@ -126,11 +130,11 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwt.signAsync(accessPayload, {
         secret: this.accessSecret,
-        expiresIn: jwtTtl(accessExpiresIn, "15m"),
+        expiresIn: accessExpiresIn as JwtSignOptions["expiresIn"],
       }),
       this.jwt.signAsync(refreshPayload, {
         secret: this.refreshSecret,
-        expiresIn: jwtTtl(refreshExpiresIn, "7d"),
+        expiresIn: refreshExpiresIn as JwtSignOptions["expiresIn"],
       }),
     ]);
 

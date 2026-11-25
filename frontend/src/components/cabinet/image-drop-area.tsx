@@ -1,42 +1,31 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { UploadIcon } from "./upload-icon";
 
 const ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
 
-function UploadIcon({ className = "size-6" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      aria-hidden
-    >
-      <path d="M12 16V6M8.5 9.5 12 6l3.5 3.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M5 18h14" strokeLinecap="round" />
-    </svg>
-  );
-}
+type ImageDropAreaProps = {
+  preview: React.ReactNode;
+  disabled?: boolean;
+  onFile: (file: File) => void;
+  hint?: string;
+};
 
 export function ImageDropArea({
   preview,
   disabled,
   onFile,
   hint = "Перетащите изображение сюда или нажмите, чтобы выбрать",
-}: {
-  preview: React.ReactNode;
-  disabled?: boolean;
-  onFile: (file: File) => void;
-  hint?: string;
-}) {
+}: ImageDropAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
 
   function takeFile(file: File | undefined | null) {
-    if (!file || disabled) return;
+    if (!file || disabled) {
+      return;
+    }
     onFile(file);
   }
 

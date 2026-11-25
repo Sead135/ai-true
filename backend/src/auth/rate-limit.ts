@@ -3,7 +3,14 @@ import { HttpException, HttpStatus } from "@nestjs/common";
 /** ponytail: in-memory per-process; swap for Redis if multi-instance. */
 const hits = new Map<string, number[]>();
 
-export function assertRateLimit(key: string, limit = 5, windowMs = 60_000): void {
+export type AssertRateLimitParams = {
+  key: string;
+  limit?: number;
+  windowMs?: number;
+};
+
+export function assertRateLimit(params: AssertRateLimitParams): void {
+  const { key, limit = 5, windowMs = 60_000 } = params;
   const now = Date.now();
   const window = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
   if (window.length >= limit) {

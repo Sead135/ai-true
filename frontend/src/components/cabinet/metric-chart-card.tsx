@@ -23,6 +23,15 @@ function ExpandIcon() {
   );
 }
 
+type MetricChartCardProps = {
+  label: string;
+  value: string;
+  points: Point[];
+  active?: boolean;
+  onSelect?: () => void;
+  onExpand?: () => void;
+};
+
 export function MetricChartCard({
   label,
   value,
@@ -30,14 +39,7 @@ export function MetricChartCard({
   active,
   onSelect,
   onExpand,
-}: {
-  label: string;
-  value: string;
-  points: Point[];
-  active?: boolean;
-  onSelect?: () => void;
-  onExpand?: () => void;
-}) {
+}: MetricChartCardProps) {
   const className = [
     "cabinet-metric-chart",
     active ? "cabinet-metric-chart--active" : "",

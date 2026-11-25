@@ -8,6 +8,13 @@ export function hash(input: string): number {
   return h >>> 0;
 }
 
-export function between(h: number, min: number, max: number): number {
+export type BetweenParams = {
+  h: number;
+  min: number;
+  max: number;
+};
+
+export function between(params: BetweenParams): number {
+  const { h, min, max } = params;
   return min + (h % (max - min + 1));
 }

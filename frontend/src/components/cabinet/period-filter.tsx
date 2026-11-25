@@ -37,10 +37,12 @@ export function PeriodFilter({ from, to, onChange, className, defaultPreset = "m
     applyPreset(lastPreset.current);
   }
 
+  const customClass = custom ? " period-filter--custom" : "";
+  const extraClass = className ? ` ${className}` : "";
+  const periodClassName = `period-filter${customClass}${extraClass}`;
+
   return (
-    <div
-      className={`period-filter${custom ? " period-filter--custom" : ""}${className ? ` ${className}` : ""}`}
-    >
+    <div className={periodClassName}>
       <div className="period-filter-presets" aria-hidden={custom}>
         {PRESETS.map(([key, label]) => (
           <button

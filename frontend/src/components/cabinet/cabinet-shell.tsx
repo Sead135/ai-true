@@ -7,7 +7,12 @@ import { AsideNav } from "./aside-nav";
 import { EditModalsProvider } from "./edit-modals-context";
 import { SessionProvider } from "./session-context";
 
-export function CabinetShell({ me, children }: { me: Me; children: React.ReactNode }) {
+type CabinetShellProps = {
+  me: Me;
+  children: React.ReactNode;
+};
+
+export function CabinetShell({ me, children }: CabinetShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {

@@ -28,9 +28,17 @@ export type AdminMetric = keyof AdminSummary;
 
 export type AdminSeriesPoint = { date: string; value: number };
 
-export function fetchStats(params: { from: string; to: string; branchId?: string }) {
+export type FetchStatsParams = {
+  from: string;
+  to: string;
+  branchId?: string;
+};
+
+export function fetchStats(params: FetchStatsParams) {
   const q = new URLSearchParams({ from: params.from, to: params.to });
-  if (params.branchId) q.set("branchId", params.branchId);
+  if (params.branchId) {
+    q.set("branchId", params.branchId);
+  }
   return api<StatsResponse>(`/stats?${q}`);
 }
 
@@ -38,11 +46,22 @@ export function fetchAdminSummary() {
   return api<AdminSummary>("/admin/stats/summary");
 }
 
-export function fetchAdminSeries(params: { metric: AdminMetric; from: string; to: string }) {
+export type FetchAdminSeriesParams = {
+  metric: AdminMetric;
+  from: string;
+  to: string;
+};
+
+export type AdminSeriesResponse = {
+  metric: AdminMetric;
+  series: AdminSeriesPoint[];
+};
+
+export function fetchAdminSeries(params: FetchAdminSeriesParams) {
   const q = new URLSearchParams({
     metric: params.metric,
     from: params.from,
     to: params.to,
   });
-  return api<{ metric: AdminMetric; series: AdminSeriesPoint[] }>(`/admin/stats/series?${q}`);
+  return api<AdminSeriesResponse>(`/admin/stats/series?${q}`);
 }

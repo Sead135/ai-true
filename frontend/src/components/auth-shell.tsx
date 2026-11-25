@@ -2,15 +2,13 @@ import { AuthOrbs } from "./auth-orbs";
 import { BrandLogo } from "./brand-logo";
 import { ThemeToggle } from "./theme-toggle";
 
-export function AuthShell({
-  title,
-  subtitle,
-  children,
-}: {
+type AuthShellProps = {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
-}) {
+};
+
+export function AuthShell({ title, subtitle, children }: AuthShellProps) {
   return (
     <div className="auth-shell relative flex min-h-screen flex-col md:flex-row">
       <div className="auth-brand-panel pointer-events-none absolute inset-0 min-h-full md:hidden">

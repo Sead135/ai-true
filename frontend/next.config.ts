@@ -4,7 +4,6 @@ import type { NextConfig } from "next";
 const apiOrigin = (process.env.API_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@ii/shared"],
   turbopack: {
     root: import.meta.dirname,
   },

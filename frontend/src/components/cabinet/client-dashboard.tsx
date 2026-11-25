@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { listBranches, type Branch } from "@/lib/branches";
 import { rangeForPreset } from "@/lib/dates";
 import { fetchStats, type StatsResponse, type StatsTotals } from "@/lib/stats";
-import { toastError } from "@/lib/toast";
+import { toast } from "@heroui/react";
 import { DayBars } from "./day-bars";
 import { FilterComboBox } from "./filter-combo-box";
 import { FiltersBar } from "./filters-bar";
@@ -28,7 +28,9 @@ const LABELS: Record<ClientMetric, string> = {
 const ORDER = Object.keys(LABELS) as ClientMetric[];
 
 function formatValue(key: ClientMetric, value: number) {
-  if (key === "avgRating") return value.toFixed(1);
+  if (key === "avgRating") {
+    return value.toFixed(1);
+  }
   return value.toLocaleString("ru-RU");
 }
 
@@ -52,10 +54,14 @@ export function ClientDashboard() {
     let cancelled = false;
     fetchStats({ from, to, branchId: branchId || undefined })
       .then((res) => {
-        if (!cancelled) setData(res);
+        if (!cancelled) {
+          setData(res);
+        }
       })
       .catch((err: { message?: string }) => {
-        if (!cancelled) toastError(err.message ?? "Ошибка загрузки");
+        if (!cancelled) {
+          toast.danger(err.message ?? "Ошибка загрузки");
+        }
       });
     return () => {
       cancelled = true;
@@ -69,7 +75,9 @@ export function ClientDashboard() {
 
   const loadModal = useCallback(
     async (rangeFrom: string, rangeTo: string) => {
-      if (!modalMetric) return [];
+      if (!modalMetric) {
+        return [];
+      }
       const res = await fetchStats({
         from: rangeFrom,
         to: rangeTo,
@@ -162,7 +170,9 @@ export function ClientDashboard() {
       <MetricChartModal
         open={modalMetric !== null}
         onOpenChange={(open) => {
-          if (!open) setModalMetric(null);
+          if (!open) {
+            setModalMetric(null);
+          }
         }}
         title={modalMetric ? LABELS[modalMetric] : ""}
         loadSeries={loadModal}

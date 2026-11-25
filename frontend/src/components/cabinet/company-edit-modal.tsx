@@ -16,21 +16,21 @@ import { DetailSkeleton } from "./skeletons";
 
 const FORM_ID = "company-edit-form";
 
-export function CompanyEditModal({
-  target,
-  onClose,
-  onSaved,
-}: {
+type CompanyEditModalProps = {
   target: string | "new" | null;
   onClose: () => void;
   onSaved: (company: Company) => void;
-}) {
+};
+
+export function CompanyEditModal({ target, onClose, onSaved }: CompanyEditModalProps) {
   const size = useModalSize("md");
   const open = target !== null;
   const state = useOverlayState({
     isOpen: open,
     onOpenChange: (next) => {
-      if (!next) onClose();
+      if (!next) {
+        onClose();
+      }
     },
   });
   const [company, setCompany] = useState<Company | null>(null);
@@ -53,10 +53,14 @@ export function CompanyEditModal({
     setPending(false);
     getCompany(target)
       .then((c) => {
-        if (!cancelled) setCompany(c);
+        if (!cancelled) {
+          setCompany(c);
+        }
       })
       .catch((err: { message?: string }) => {
-        if (!cancelled) setError(err.message ?? "Не найдено");
+        if (!cancelled) {
+          setError(err.message ?? "Не найдено");
+        }
       });
     return () => {
       cancelled = true;

@@ -2,13 +2,14 @@ import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { and, count, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types";
 import { BranchesService } from "../branches/branches.service";
-import { utcToday } from "../common/dates";
+import { utcToday, type BranchDateRange } from "../common/dates";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
 import { reviews } from "../database/schema/index";
 import type { GetReviewsQueryDto } from "./dto/get-reviews.query.dto";
 import type { ReviewsPageDto } from "./dto/review.dto";
-import { REVIEWS_SOURCE, type ReviewRow, type ReviewsSource } from "./reviews-source";
+import { MockReviewsSource } from "./mock-reviews-source";
+import type { ReviewRow } from "./reviews-source";
 
 type Db = ReturnType<typeof createDb>["db"];
 
@@ -16,15 +17,19 @@ type Db = ReturnType<typeof createDb>["db"];
 export class ReviewsService {
   constructor(
     @Inject(DRIZZLE) private readonly db: Db,
-    @Inject(REVIEWS_SOURCE) private readonly source: ReviewsSource,
+    private readonly source: MockReviewsSource,
     private readonly branches: BranchesService,
   ) {}
 
   /** Ensure mock/API reviews exist for past days in range (also used by stats). */
-  async ensureForRange(branchIds: string[], from: string, to: string): Promise<void> {
+  async ensureForRange(range: BranchDateRange): Promise<void> {
+    const { branchIds, from, to } = range;
     const today = utcToday();
     const fillTo = to < today ? to : today;
-    if (from > fillTo) return;
+    const rangePastEnd = from > fillTo;
+    if (rangePastEnd) {
+      return;
+    }
 
     const existing = await this.db
       .select({ branchId: reviews.branchId, mockKey: reviews.mockKey })
@@ -38,7 +43,7 @@ export class ReviewsService {
       );
 
     const have = new Set(existing.map((r) => `${r.branchId}:${r.mockKey}`));
-    const generated = await this.source.fetchReviews(branchIds, from, fillTo);
+    const generated = await this.source.fetchReviews({ branchIds, from, to: fillTo });
     const missing = generated.filter((r) => !have.has(`${r.branchId}:${r.mockKey}`));
     await this.upsert(missing);
   }
@@ -59,7 +64,7 @@ export class ReviewsService {
     }
 
     // ponytail: lazy mock fill on GET; swap source when real reviews API lands
-    await this.ensureForRange(branchIds, from, to);
+    await this.ensureForRange({ branchIds, from, to });
 
     const fromTs = new Date(`${from}T00:00:00.000Z`);
     const toTs = new Date(`${to}T23:59:59.999Z`);
@@ -103,7 +108,9 @@ export class ReviewsService {
   }
 
   private async upsert(rows: ReviewRow[]): Promise<number> {
-    if (rows.length === 0) return 0;
+    if (rows.length === 0) {
+      return 0;
+    }
 
     await this.db
       .insert(reviews)

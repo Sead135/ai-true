@@ -40,10 +40,14 @@ export function AuthOrbs() {
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf = 0;
@@ -53,7 +57,9 @@ export function AuthOrbs() {
 
     function resize() {
       const parent = canvas!.parentElement;
-      if (!parent) return;
+      if (!parent) {
+        return;
+      }
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       w = parent.clientWidth;
       h = parent.clientHeight;
@@ -103,8 +109,12 @@ export function AuthOrbs() {
       for (const orb of orbs) {
         orb.x += orb.vx;
         orb.y += orb.vy;
-        if (orb.x < -orb.r * 0.2 || orb.x > w + orb.r * 0.2) orb.vx *= -1;
-        if (orb.y < -orb.r * 0.2 || orb.y > h + orb.r * 0.2) orb.vy *= -1;
+        if (orb.x < -orb.r * 0.2 || orb.x > w + orb.r * 0.2) {
+          orb.vx *= -1;
+        }
+        if (orb.y < -orb.r * 0.2 || orb.y > h + orb.r * 0.2) {
+          orb.vy *= -1;
+        }
       }
       draw();
       raf = requestAnimationFrame(tick);
@@ -114,20 +124,28 @@ export function AuthOrbs() {
       const prevW = w;
       const prevH = h;
       resize();
-      if (w === 0 || h === 0) return;
-      if (w !== prevW || h !== prevH || !orbs.length) seed();
+      if (w === 0 || h === 0) {
+        return;
+      }
+      if (w !== prevW || h !== prevH || !orbs.length) {
+        seed();
+      }
       draw();
     };
 
     onResize();
-    if (!reduceMotion) raf = requestAnimationFrame(tick);
+    if (!reduceMotion) {
+      raf = requestAnimationFrame(tick);
+    }
 
     window.addEventListener("resize", onResize);
 
     const parent = canvas.parentElement;
     const ro =
       parent && typeof ResizeObserver !== "undefined" ? new ResizeObserver(onResize) : null;
-    if (parent && ro) ro.observe(parent);
+    if (parent && ro) {
+      ro.observe(parent);
+    }
 
     const themeWatch = new MutationObserver(() => {
       applyColors();

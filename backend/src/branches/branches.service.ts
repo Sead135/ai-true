@@ -179,7 +179,9 @@ export class BranchesService {
     }
 
     const user = await requireUser(this.db, actor.sub);
-    if (!user.companyId) return [];
+    if (!user.companyId) {
+      return [];
+    }
     const rows = await this.db
       .select({ id: branches.id })
       .from(branches)

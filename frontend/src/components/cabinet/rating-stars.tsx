@@ -1,6 +1,10 @@
 "use client";
 
-function Star({ filled }: { filled: boolean }) {
+type StarProps = {
+  filled: boolean;
+};
+
+function Star({ filled }: StarProps) {
   return (
     <svg viewBox="0 0 24 24" className="cabinet-rating-star" aria-hidden>
       <path
@@ -15,14 +19,26 @@ function Star({ filled }: { filled: boolean }) {
 }
 
 function toneFor(rating: number) {
-  if (rating >= 5) return "cabinet-rating--5";
-  if (rating >= 4) return "cabinet-rating--4";
-  if (rating >= 3) return "cabinet-rating--3";
-  if (rating >= 2) return "cabinet-rating--2";
+  if (rating >= 5) {
+    return "cabinet-rating--5";
+  }
+  if (rating >= 4) {
+    return "cabinet-rating--4";
+  }
+  if (rating >= 3) {
+    return "cabinet-rating--3";
+  }
+  if (rating >= 2) {
+    return "cabinet-rating--2";
+  }
   return "cabinet-rating--1";
 }
 
-export function RatingStars({ rating }: { rating: number }) {
+type RatingStarsProps = {
+  rating: number;
+};
+
+export function RatingStars({ rating }: RatingStarsProps) {
   const value = Math.max(0, Math.min(5, Math.round(rating)));
   return (
     <span className={`cabinet-rating ${toneFor(value)}`} aria-label={`Рейтинг ${value} из 5`}>

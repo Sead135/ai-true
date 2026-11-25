@@ -2,22 +2,30 @@ import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { and, gte, inArray, lte, sql } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types";
 import { BranchesService } from "../branches/branches.service";
-import { daysInclusive, utcToday } from "../common/dates";
+import { daysInclusive, utcToday, type BranchDateRange } from "../common/dates";
 import { DRIZZLE } from "../database/database.module";
 import type { createDb } from "../database/db";
 import { dailyMetrics, reviews } from "../database/schema/index";
 import { ReviewsService } from "../reviews/reviews.service";
 import type { GetStatsQueryDto } from "./dto/get-stats.query.dto";
 import type { StatsResponseDto, StatsSeriesPointDto, StatsTotalsDto } from "./dto/stats.dto";
-import { STATS_SOURCE, type DailyStatsRow, type StatsSource } from "./stats-source";
+import { MockStatsSource } from "./mock-stats-source";
+import type { DailyStatsRow } from "./stats-source";
 
 type Db = ReturnType<typeof createDb>["db"];
+
+type ReviewDayTotals = {
+  count: number;
+  avg: number;
+};
+
+type ReviewTotalsMap = Map<string, ReviewDayTotals>;
 
 @Injectable()
 export class StatsService {
   constructor(
     @Inject(DRIZZLE) private readonly db: Db,
-    @Inject(STATS_SOURCE) private readonly source: StatsSource,
+    private readonly source: MockStatsSource,
     private readonly branches: BranchesService,
     private readonly reviews: ReviewsService,
   ) {}
@@ -35,8 +43,8 @@ export class StatsService {
     }
 
     // Reviews first so reviewsCount/avgRating match rows in `reviews`
-    await this.reviews.ensureForRange(branchIds, from, to);
-    await this.ensurePastMetrics(branchIds, from, to);
+    await this.reviews.ensureForRange({ branchIds, from, to });
+    await this.ensurePastMetrics({ branchIds, from, to });
 
     const rows = await this.db
       .select()
@@ -49,7 +57,7 @@ export class StatsService {
         ),
       );
 
-    const reviewMap = await this.reviewTotalsByBranchDate(branchIds, from, to);
+    const reviewMap = await this.reviewTotalsByBranchDate({ branchIds, from, to });
     const aligned = rows.map((row) => {
       const base = fromDb(row);
       const live = reviewMap.get(`${row.branchId}:${row.date}`);
@@ -64,11 +72,8 @@ export class StatsService {
   }
 
   /** Live counts from `reviews` — source of truth for the dashboard numbers. */
-  private async reviewTotalsByBranchDate(
-    branchIds: string[],
-    from: string,
-    to: string,
-  ): Promise<Map<string, { count: number; avg: number }>> {
+  private async reviewTotalsByBranchDate(range: BranchDateRange): Promise<ReviewTotalsMap> {
+    const { branchIds, from, to } = range;
     const rows = await this.db
       .select({
         branchId: reviews.branchId,
@@ -95,10 +100,14 @@ export class StatsService {
   }
 
   /** Fill missing days in [from, min(to, today)] from StatsSource. Future dates skipped. */
-  private async ensurePastMetrics(branchIds: string[], from: string, to: string): Promise<void> {
+  private async ensurePastMetrics(range: BranchDateRange): Promise<void> {
+    const { branchIds, from, to } = range;
     const today = utcToday();
     const fillTo = to < today ? to : today;
-    if (from > fillTo) return;
+    const rangePastEnd = from > fillTo;
+    if (rangePastEnd) {
+      return;
+    }
 
     const existing = await this.db
       .select({ branchId: dailyMetrics.branchId, date: dailyMetrics.date })
@@ -114,15 +123,20 @@ export class StatsService {
     const have = new Set(existing.map((r) => `${r.branchId}:${r.date}`));
     const expectedDays = daysInclusive(from, fillTo);
     const expected = branchIds.length * expectedDays;
-    if (have.size >= expected) return;
+    const allDaysPresent = have.size >= expected;
+    if (allDaysPresent) {
+      return;
+    }
 
-    const rows = await this.source.fetchDaily(branchIds, from, fillTo);
+    const rows = await this.source.fetchDaily({ branchIds, from, to: fillTo });
     const missing = rows.filter((r) => !have.has(`${r.branchId}:${r.date}`));
     await this.upsert(missing);
   }
 
   private async upsert(rows: DailyStatsRow[]): Promise<number> {
-    if (rows.length === 0) return 0;
+    if (rows.length === 0) {
+      return 0;
+    }
 
     await this.db
       .insert(dailyMetrics)
@@ -187,7 +201,9 @@ function aggregate(rows: DailyStatsRow[]): StatsResponseDto {
 }
 
 function sumRows(rows: DailyStatsRow[]): StatsTotalsDto {
-  if (rows.length === 0) return emptyTotals();
+  if (rows.length === 0) {
+    return emptyTotals();
+  }
 
   let views = 0;
   let websiteClicks = 0;

@@ -19,6 +19,15 @@ const empty: BranchInput = {
   isActive: true,
 };
 
+type BranchFormProps = {
+  initial?: Branch;
+  submitLabel: string;
+  onSubmit: (data: BranchInput) => Promise<void>;
+  formId?: string;
+  hideSubmit?: boolean;
+  onPendingChange?: (pending: boolean) => void;
+};
+
 export function BranchForm({
   initial,
   submitLabel,
@@ -26,14 +35,7 @@ export function BranchForm({
   formId,
   hideSubmit,
   onPendingChange,
-}: {
-  initial?: Branch;
-  submitLabel: string;
-  onSubmit: (data: BranchInput) => Promise<void>;
-  formId?: string;
-  hideSubmit?: boolean;
-  onPendingChange?: (pending: boolean) => void;
-}) {
+}: BranchFormProps) {
   const [form, setForm] = useState<BranchInput>(
     initial
       ? {

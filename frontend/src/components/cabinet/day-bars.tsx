@@ -7,15 +7,17 @@ function formatDay(iso: string) {
   return `${d}.${m}`;
 }
 
+type DayBarsProps = {
+  title: string;
+  points: Point[];
+  formatValue?: (n: number) => string;
+};
+
 export function DayBars({
   title,
   points,
   formatValue = (n) => n.toLocaleString("ru-RU"),
-}: {
-  title: string;
-  points: Point[];
-  formatValue?: (n: number) => string;
-}) {
+}: DayBarsProps) {
   const recent = points.slice(-14);
   const max = Math.max(...recent.map((p) => p.value), 1);
 
@@ -38,7 +40,9 @@ export function DayBars({
               <span className="cabinet-day-bar-track" aria-hidden>
                 <span
                   className="cabinet-day-bar-fill"
-                  style={{ width: `${Math.max((p.value / max) * 100, p.value > 0 ? 4 : 0)}%` }}
+                  style={{
+                    width: `${Math.max((p.value / max) * 100, p.value > 0 ? 4 : 0)}%`,
+                  }}
                 />
               </span>
               <span className="cabinet-day-bar-value">{formatValue(p.value)}</span>

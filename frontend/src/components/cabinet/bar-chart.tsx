@@ -16,23 +16,31 @@ function formatValue(n: number) {
 }
 
 function labelStep(count: number) {
-  if (count <= 8) return 1;
-  if (count <= 16) return 2;
-  if (count <= 31) return 3;
+  if (count <= 8) {
+    return 1;
+  }
+  if (count <= 16) {
+    return 2;
+  }
+  if (count <= 31) {
+    return 3;
+  }
   return Math.ceil(count / 10);
 }
+
+type BarChartProps = {
+  points: Point[];
+  className?: string;
+  showLabels?: boolean;
+  interactive?: boolean;
+};
 
 export function BarChart({
   points,
   className = "h-full w-full",
   showLabels = false,
   interactive = false,
-}: {
-  points: Point[];
-  className?: string;
-  showLabels?: boolean;
-  interactive?: boolean;
-}) {
+}: BarChartProps) {
   const tipId = useId();
   const [hover, setHover] = useState<{
     index: number;
@@ -58,7 +66,12 @@ export function BarChart({
   const padBottom = showLabels ? 28 : 10;
   const innerW = w - padX * 2;
   const innerH = h - padTop - padBottom;
-  const gap = points.length > 40 ? 1 : points.length > 20 ? 2 : 3.5;
+  let gap = 3.5;
+  if (points.length > 40) {
+    gap = 1;
+  } else if (points.length > 20) {
+    gap = 2;
+  }
   const barW = Math.max((innerW - gap * (points.length - 1)) / points.length, 1.5);
   const step = labelStep(points.length);
   const active = hover ? points[hover.index] : null;

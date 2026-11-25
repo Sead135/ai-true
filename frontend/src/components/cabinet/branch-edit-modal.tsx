@@ -16,23 +16,22 @@ import { DetailSkeleton } from "./skeletons";
 
 const FORM_ID = "branch-edit-form";
 
-export function BranchEditModal({
-  target,
-  companyId,
-  onClose,
-  onSaved,
-}: {
+type BranchEditModalProps = {
   target: string | "new" | null;
   companyId?: string | null;
   onClose: () => void;
   onSaved: (branch: Branch) => void;
-}) {
+};
+
+export function BranchEditModal({ target, companyId, onClose, onSaved }: BranchEditModalProps) {
   const size = useModalSize("md");
   const open = target !== null;
   const state = useOverlayState({
     isOpen: open,
     onOpenChange: (next) => {
-      if (!next) onClose();
+      if (!next) {
+        onClose();
+      }
     },
   });
   const [branch, setBranch] = useState<Branch | null>(null);
@@ -55,10 +54,14 @@ export function BranchEditModal({
     setPending(false);
     getBranch(target)
       .then((b) => {
-        if (!cancelled) setBranch(b);
+        if (!cancelled) {
+          setBranch(b);
+        }
       })
       .catch((err: { message?: string }) => {
-        if (!cancelled) setError(err.message ?? "Не найдено");
+        if (!cancelled) {
+          setError(err.message ?? "Не найдено");
+        }
       });
     return () => {
       cancelled = true;
@@ -67,7 +70,9 @@ export function BranchEditModal({
 
   async function onSubmit(data: BranchInput) {
     if (isNew) {
-      if (!companyId) throw { message: "Сначала создайте компанию" };
+      if (!companyId) {
+        throw { message: "Сначала создайте компанию" };
+      }
       const saved = await createBranch({ ...data, companyId });
       onSaved(saved);
     } else {

@@ -19,11 +19,17 @@ const EditModalsCtx = createContext<EditModalsApi | null>(null);
 
 export function useEditModals() {
   const ctx = useContext(EditModalsCtx);
-  if (!ctx) throw new Error("useEditModals outside provider");
+  if (!ctx) {
+    throw new Error("useEditModals outside provider");
+  }
   return ctx;
 }
 
-export function EditModalsProvider({ children }: { children: React.ReactNode }) {
+type EditModalsProviderProps = {
+  children: React.ReactNode;
+};
+
+export function EditModalsProvider({ children }: EditModalsProviderProps) {
   const { me } = useSession();
   const [companyTarget, setCompanyTarget] = useState<string | "new" | null>(null);
   const [branchTarget, setBranchTarget] = useState<string | "new" | null>(null);
@@ -41,10 +47,14 @@ export function EditModalsProvider({ children }: { children: React.ReactNode }) 
     let cancelled = false;
     listCompanies({ limit: 1 })
       .then((page) => {
-        if (!cancelled) setClientCompanyId(page.items[0]?.id ?? null);
+        if (!cancelled) {
+          setClientCompanyId(page.items[0]?.id ?? null);
+        }
       })
       .catch(() => {
-        if (!cancelled) setClientCompanyId(null);
+        if (!cancelled) {
+          setClientCompanyId(null);
+        }
       });
     return () => {
       cancelled = true;
@@ -74,7 +84,9 @@ export function EditModalsProvider({ children }: { children: React.ReactNode }) 
         target={companyTarget}
         onClose={() => setCompanyTarget(null)}
         onSaved={(c) => {
-          if (me.role === "client") setClientCompanyId(c.id);
+          if (me.role === "client") {
+            setClientCompanyId(c.id);
+          }
           bump();
         }}
       />

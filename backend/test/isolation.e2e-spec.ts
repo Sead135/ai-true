@@ -13,6 +13,11 @@ const BRANCH_B1 = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1";
 
 const CLIENT = { email: "client@severny.local", password: "password123" };
 
+type BranchSummary = {
+  id: string;
+  companyId: string;
+};
+
 describe("Company data isolation (e2e)", () => {
   let app: INestApplication<App>;
   let agent: ReturnType<typeof request.agent>;
@@ -47,10 +52,11 @@ describe("Company data isolation (e2e)", () => {
     expect(companies.body.items[0].id).toBe(COMPANY_A);
 
     const branches = await agent.get("/branches").expect(200);
-    expect(branches.body.items.every((b: { companyId: string }) => b.companyId === COMPANY_A)).toBe(
-      true,
-    );
-    expect(branches.body.items.some((b: { id: string }) => b.id === BRANCH_B1)).toBe(false);
+    const onlyOwnCompany = (b: BranchSummary) => {
+      return b.companyId === COMPANY_A;
+    };
+    expect(branches.body.items.every(onlyOwnCompany)).toBe(true);
+    expect(branches.body.items.some((b: BranchSummary) => b.id === BRANCH_B1)).toBe(false);
   });
 
   it("client cannot read another company's company/branch/stats", async () => {

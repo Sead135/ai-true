@@ -10,7 +10,6 @@
   "dependencies": {
     "@heroui/react": "^3.2.8",
     "@heroui/styles": "^3.2.8",
-    "@ii/shared": "file:../packages/shared",
     "@internationalized/date": "^3.12.4",
     "next": "16.4.6",
     "next-themes": "^0.4.6",

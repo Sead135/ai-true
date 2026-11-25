@@ -10,19 +10,20 @@ type SessionValue = {
 
 const SessionContext = createContext<SessionValue | null>(null);
 
-export function SessionProvider({
-  me: initialMe,
-  children,
-}: {
+type SessionProviderProps = {
   me: Me;
   children: React.ReactNode;
-}) {
+};
+
+export function SessionProvider({ me: initialMe, children }: SessionProviderProps) {
   const [me, setMe] = useState(initialMe);
   return <SessionContext.Provider value={{ me, setMe }}>{children}</SessionContext.Provider>;
 }
 
 export function useSession(): SessionValue {
   const ctx = useContext(SessionContext);
-  if (!ctx) throw new Error("useSession outside SessionProvider");
+  if (!ctx) {
+    throw new Error("useSession outside SessionProvider");
+  }
   return ctx;
 }

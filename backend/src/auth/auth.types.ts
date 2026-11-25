@@ -1,4 +1,4 @@
-import type { Role } from "@ii/shared";
+export type Role = "admin" | "client";
 
 export type AccessTokenPayload = {
   sub: string;

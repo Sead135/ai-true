@@ -1,3 +1,12 @@
+export type DateRange = {
+  from: string;
+  to: string;
+};
+
+export type BranchDateRange = DateRange & {
+  branchIds: string[];
+};
+
 /** UTC calendar day `YYYY-MM-DD`. */
 export function utcToday(): string {
   return new Date().toISOString().slice(0, 10);

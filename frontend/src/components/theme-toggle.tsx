@@ -4,7 +4,11 @@ import { Button } from "@heroui/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-function SunIcon({ className = "size-4" }: { className?: string }) {
+type IconProps = {
+  className?: string;
+};
+
+function SunIcon({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -20,7 +24,7 @@ function SunIcon({ className = "size-4" }: { className?: string }) {
   );
 }
 
-function MoonIcon({ className = "size-4" }: { className?: string }) {
+function MoonIcon({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -35,15 +39,17 @@ function MoonIcon({ className = "size-4" }: { className?: string }) {
   );
 }
 
+type ThemeToggleProps = {
+  className?: string;
+  labeled?: boolean;
+  collapsed?: boolean;
+};
+
 export function ThemeToggle({
   className,
   labeled = false,
   collapsed = false,
-}: {
-  className?: string;
-  labeled?: boolean;
-  collapsed?: boolean;
-} = {}) {
+}: ThemeToggleProps = {}) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -66,10 +72,13 @@ export function ThemeToggle({
   const label = isDark ? "Светлая тема" : "Тёмная тема";
 
   if (labeled) {
+    const collapsedClass = collapsed ? " cabinet-theme-toggle--collapsed" : "";
+    const extraClass = className ? ` ${className}` : "";
+    const toggleClassName = `cabinet-theme-toggle${collapsedClass}${extraClass}`;
     return (
       <button
         type="button"
-        className={`cabinet-theme-toggle${collapsed ? " cabinet-theme-toggle--collapsed" : ""}${className ? ` ${className}` : ""}`}
+        className={toggleClassName}
         aria-label={label}
         title={collapsed ? label : undefined}
         onClick={() => setTheme(isDark ? "light" : "dark")}

@@ -16,7 +16,9 @@ export function useUrlQuery<T extends Record<string, string>>(defaults: T) {
     const next = { ...defaultsRef.current };
     for (const key of Object.keys(next)) {
       const raw = searchParams.get(key);
-      if (raw !== null) (next as Record<string, string>)[key] = raw;
+      if (raw !== null) {
+        (next as Record<string, string>)[key] = raw;
+      }
     }
     return next;
   }, [searchParams]);
@@ -26,9 +28,14 @@ export function useUrlQuery<T extends Record<string, string>>(defaults: T) {
       const defaultsNow = defaultsRef.current as Record<string, string>;
       const next = new URLSearchParams(searchParams.toString());
       for (const [key, value] of Object.entries(patch)) {
-        if (value === undefined) continue;
-        if (value === "" || value === defaultsNow[key]) next.delete(key);
-        else next.set(key, value);
+        if (value === undefined) {
+          continue;
+        }
+        if (value === "" || value === defaultsNow[key]) {
+          next.delete(key);
+        } else {
+          next.set(key, value);
+        }
       }
       const qs = next.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });

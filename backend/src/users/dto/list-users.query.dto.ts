@@ -1,10 +1,7 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 import { IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
-
-function emptyToUndefined({ value }: { value: unknown }) {
-  return value === "" || value === null ? undefined : value;
-}
+import { emptyToUndefined } from "../../common/transform";
 
 export class ListUsersQueryDto {
   @ApiPropertyOptional({ description: "Search by email or name" })

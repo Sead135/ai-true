@@ -4,89 +4,30 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { listCompanies, type Company } from "@/lib/companies";
 import { BrandLogo } from "../brand-logo";
-import { usePageTransition } from "../page-transition";
 import { ThemeToggle } from "../theme-toggle";
 import { AccountMenu } from "./account-menu";
+import { AsideCompanyBlock } from "./aside-company-block";
+import { CollapseIcon, NavLink } from "./aside-nav-link";
 import { useEditModals } from "./edit-modals-context";
 import { IconBranch, IconBuilding, IconChart, IconReviews, IconUsers } from "./nav-icons";
 import { useSession } from "./session-context";
 
 const COLLAPSE_KEY = "cabinet-aside-collapsed";
 
-function NavLink({
-  href,
-  label,
-  icon,
-  collapsed,
-  onNavigate,
-}: {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-  collapsed: boolean;
-  onNavigate?: () => void;
-}) {
-  const pathname = usePathname();
-  const { navigate } = usePageTransition();
-  const active =
-    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
-
-  return (
-    <button
-      type="button"
-      title={collapsed ? label : undefined}
-      onClick={() => {
-        onNavigate?.();
-        navigate(href);
-      }}
-      className={`cabinet-nav-link ${active ? "cabinet-nav-link--active" : ""}`}
-    >
-      <span className="cabinet-nav-icon">{icon}</span>
-      <span className="cabinet-nav-label">{label}</span>
-    </button>
-  );
-}
-
-function CollapseIcon({ collapsed }: { collapsed: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="size-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden
-    >
-      {collapsed ? (
-        <>
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <path d="M9 4v16" />
-          <path d="M13 12h5M15.5 9.5 18 12l-2.5 2.5" strokeLinecap="round" strokeLinejoin="round" />
-        </>
-      ) : (
-        <>
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <path d="M9 4v16" />
-          <path d="M18 12h-5M15.5 9.5 13 12l2.5 2.5" strokeLinecap="round" strokeLinejoin="round" />
-        </>
-      )}
-    </svg>
-  );
-}
-
-export function AsideNav({
-  mobileOpen,
-  onMobileOpenChange,
-}: {
+type AsideNavProps = {
   mobileOpen: boolean;
   onMobileOpenChange: (open: boolean) => void;
-}) {
+};
+
+export function AsideNav({ mobileOpen, onMobileOpenChange }: AsideNavProps) {
   const { me } = useSession();
   const pathname = usePathname();
   const { openCompany, revision } = useEditModals();
   const [company, setCompany] = useState<Company | null | undefined>(undefined);
   const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === "undefined") {
+      return false;
+    }
     try {
       return localStorage.getItem(COLLAPSE_KEY) === "1";
     } catch {
@@ -99,7 +40,9 @@ export function AsideNav({
   }, [pathname, onMobileOpenChange]);
 
   useEffect(() => {
-    if (!mobileOpen) return;
+    if (!mobileOpen) {
+      return;
+    }
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -108,14 +51,20 @@ export function AsideNav({
   }, [mobileOpen]);
 
   useEffect(() => {
-    if (me.role !== "client") return;
+    if (me.role !== "client") {
+      return;
+    }
     let cancelled = false;
     listCompanies({ limit: 1 })
       .then((res) => {
-        if (!cancelled) setCompany(res.items[0] ?? null);
+        if (!cancelled) {
+          setCompany(res.items[0] ?? null);
+        }
       })
       .catch(() => {
-        if (!cancelled) setCompany(null);
+        if (!cancelled) {
+          setCompany(null);
+        }
       });
     return () => {
       cancelled = true;
@@ -138,19 +87,27 @@ export function AsideNav({
     onMobileOpenChange(false);
   }
 
+  function openCompanyEditor() {
+    closeMobile();
+    openCompany(company ? company.id : "new");
+  }
+
+  const backdropOpenClass = mobileOpen ? "cabinet-sheet-backdrop--open" : "";
+  const asideCollapsedClass = collapsed ? "cabinet-aside--collapsed" : "";
+  const asideOpenClass = mobileOpen ? "cabinet-aside--open" : "";
+  const asideClassName = `cabinet-aside ${asideCollapsedClass} ${asideOpenClass}`;
+
   return (
     <>
       <button
         type="button"
-        className={`cabinet-sheet-backdrop ${mobileOpen ? "cabinet-sheet-backdrop--open" : ""}`}
+        className={`cabinet-sheet-backdrop ${backdropOpenClass}`}
         aria-label="Закрыть меню"
         tabIndex={mobileOpen ? 0 : -1}
         onClick={closeMobile}
       />
 
-      <aside
-        className={`cabinet-aside ${collapsed ? "cabinet-aside--collapsed" : ""} ${mobileOpen ? "cabinet-aside--open" : ""}`}
-      >
+      <aside className={asideClassName}>
         <div className="cabinet-sheet-handle" aria-hidden>
           <span />
         </div>
@@ -188,40 +145,7 @@ export function AsideNav({
         </div>
 
         {me.role === "client" ? (
-          <button
-            type="button"
-            title={collapsed ? (company?.name ?? "Компания") : undefined}
-            onClick={() => {
-              closeMobile();
-              openCompany(company ? company.id : "new");
-            }}
-            className="cabinet-company"
-          >
-            {company?.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={company.logoUrl}
-                alt=""
-                className="h-[36px] w-[36px] shrink-0 rounded-xl object-cover"
-              />
-            ) : (
-              <span className="flex h-[36px] w-[36px] shrink-0 items-center justify-center rounded-xl bg-[var(--color-signal)]/10 text-sm font-bold text-[var(--color-signal)]">
-                {company?.name?.charAt(0) ?? "+"}
-              </span>
-            )}
-            <span className="cabinet-company-meta min-w-0 flex-1 text-left">
-              <span className="block truncate text-sm font-semibold">
-                {company === undefined ? (
-                  <span className="cabinet-skeleton inline-block h-4 w-24 align-middle" />
-                ) : (
-                  (company?.name ?? "Нет компании")
-                )}
-              </span>
-              <span className="block text-xs text-foreground/45">
-                {company ? "Редактировать" : "Добавить компанию"}
-              </span>
-            </span>
-          </button>
+          <AsideCompanyBlock company={company} collapsed={collapsed} onEdit={openCompanyEditor} />
         ) : null}
 
         <nav className="cabinet-aside-nav">

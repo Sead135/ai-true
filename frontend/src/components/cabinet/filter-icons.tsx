@@ -1,4 +1,8 @@
-export function IconSearch({ className = "size-4" }: { className?: string }) {
+type IconProps = {
+  className?: string;
+};
+
+export function IconSearch({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -14,7 +18,7 @@ export function IconSearch({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconStar({ className = "size-4" }: { className?: string }) {
+export function IconStar({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -32,7 +36,7 @@ export function IconStar({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconStatus({ className = "size-4" }: { className?: string }) {
+export function IconStatus({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -48,7 +52,7 @@ export function IconStatus({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconRole({ className = "size-4" }: { className?: string }) {
+export function IconRole({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -64,7 +68,7 @@ export function IconRole({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconRows({ className = "size-4" }: { className?: string }) {
+export function IconRows({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -79,7 +83,7 @@ export function IconRows({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconCalendar({ className = "size-4" }: { className?: string }) {
+export function IconCalendar({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -95,7 +99,7 @@ export function IconCalendar({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconSave({ className = "size-4" }: { className?: string }) {
+export function IconSave({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -110,7 +114,7 @@ export function IconSave({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconTrash({ className = "size-4" }: { className?: string }) {
+export function IconTrash({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -129,7 +133,7 @@ export function IconTrash({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconCancel({ className = "size-4" }: { className?: string }) {
+export function IconCancel({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -144,7 +148,7 @@ export function IconCancel({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconPlus({ className = "size-5" }: { className?: string }) {
+export function IconPlus({ className = "size-5" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"

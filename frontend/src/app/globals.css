@@ -2035,18 +2035,6 @@ button.cabinet-account-avatar:hover {
   box-shadow: 0 8px 24px rgb(45 50 58 / 0.06);
 }
 
-.cabinet-line-chart-area {
-  fill: color-mix(in srgb, var(--color-signal) 14%, transparent);
-}
-
-.cabinet-line-chart-line {
-  stroke: var(--color-signal);
-}
-
-.cabinet-line-chart-dot {
-  fill: var(--color-signal);
-}
-
 .cabinet-bar-chart-bar {
   fill: var(--color-signal);
   opacity: 0.88;

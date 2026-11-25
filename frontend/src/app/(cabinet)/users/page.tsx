@@ -42,7 +42,9 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (me.role !== "admin") return;
+    if (me.role !== "admin") {
+      return;
+    }
     listCompanies({ limit: 100 })
       .then((res) => setCompanies(res.items))
       .catch(() => setCompanies([]));
@@ -63,7 +65,9 @@ export default function UsersPage() {
       limit,
     })
       .then((res) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setItems(res.items);
         setTotal(res.total);
       })
@@ -78,7 +82,9 @@ export default function UsersPage() {
     };
   }, [me.role, navigate, search, role, companyId, page, limit, revision]);
 
-  if (me.role !== "admin") return null;
+  if (me.role !== "admin") {
+    return null;
+  }
 
   return (
     <div>
@@ -134,52 +140,56 @@ export default function UsersPage() {
       </FiltersBar>
 
       {error ? <p className="cabinet-error">{error}</p> : null}
-      {!items ? (
-        <ListCardSkeleton />
-      ) : items.length === 0 ? (
-        <p className="cabinet-empty">Пользователей пока нет</p>
-      ) : (
-        <ul className="cabinet-list">
-          {items.map((u) => {
-            const initial = (u.name?.trim() || u.email).charAt(0).toUpperCase();
-            return (
-              <li key={u.id}>
-                <button
-                  type="button"
-                  onClick={() => openUser(u.id)}
-                  className="cabinet-list-card flex w-full items-center justify-between gap-3 text-left"
-                >
-                  <span className="flex min-w-0 items-center gap-3">
-                    {u.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={u.avatarUrl}
-                        alt=""
-                        className="size-10 shrink-0 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--field-background)] text-sm font-bold text-[var(--color-signal)]">
-                        {initial}
-                      </span>
-                    )}
-                    <span className="min-w-0">
-                      <span className="cabinet-list-title">{u.name?.trim() || u.email}</span>
-                      <span className="cabinet-list-meta">
-                        {u.name?.trim() ? <span>{u.email}</span> : null}
-                        <span>{ROLE_LABEL[u.role]}</span>
-                        {u.companyName ? <span>{u.companyName}</span> : null}
+      {(() => {
+        if (!items) {
+          return <ListCardSkeleton />;
+        }
+        if (items.length === 0) {
+          return <p className="cabinet-empty">Пользователей пока нет</p>;
+        }
+        return (
+          <ul className="cabinet-list">
+            {items.map((u) => {
+              const initial = (u.name?.trim() || u.email).charAt(0).toUpperCase();
+              return (
+                <li key={u.id}>
+                  <button
+                    type="button"
+                    onClick={() => openUser(u.id)}
+                    className="cabinet-list-card flex w-full items-center justify-between gap-3 text-left"
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      {u.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={u.avatarUrl}
+                          alt=""
+                          className="size-10 shrink-0 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--field-background)] text-sm font-bold text-[var(--color-signal)]">
+                          {initial}
+                        </span>
+                      )}
+                      <span className="min-w-0">
+                        <span className="cabinet-list-title">{u.name?.trim() || u.email}</span>
+                        <span className="cabinet-list-meta">
+                          {u.name?.trim() ? <span>{u.email}</span> : null}
+                          <span>{ROLE_LABEL[u.role]}</span>
+                          {u.companyName ? <span>{u.companyName}</span> : null}
+                        </span>
                       </span>
                     </span>
-                  </span>
-                  <span className="shrink-0 text-xs text-foreground/35">
-                    {new Date(u.createdAt).toLocaleDateString("ru-RU")}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                    <span className="shrink-0 text-xs text-foreground/35">
+                      {new Date(u.createdAt).toLocaleDateString("ru-RU")}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        );
+      })()}
 
       <ListPagination
         page={page}

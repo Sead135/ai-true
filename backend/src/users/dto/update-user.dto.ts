@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import type { Role } from "@ii/shared";
+import type { Role } from "../../auth/auth.types";
 import {
   IsEmail,
   IsIn,

@@ -20,7 +20,9 @@ function scrollListTop() {
 }
 
 export function ListPagination({ page, limit, total, onPageChange, onLimitChange }: Props) {
-  if (total < 10) return null;
+  if (total < 10) {
+    return null;
+  }
   const pages = Math.max(1, Math.ceil(total / limit));
 
   function goToPage(next: number) {
@@ -56,7 +58,10 @@ export function ListPagination({ page, limit, total, onPageChange, onLimitChange
         icon={<IconRows />}
         value={String(limit)}
         onChange={(v) => onLimitChange(Number(v) as PageSize)}
-        options={PAGE_SIZES.map((n) => ({ id: String(n), label: `${n} на стр.` }))}
+        options={PAGE_SIZES.map((n) => ({
+          id: String(n),
+          label: `${n} на стр.`,
+        }))}
       />
     </div>
   );

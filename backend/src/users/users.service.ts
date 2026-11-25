@@ -75,17 +75,23 @@ export class UsersService {
       .where(eq(users.id, id))
       .limit(1);
 
-    if (!row) throw new NotFoundException("User not found");
+    if (!row) {
+      throw new NotFoundException("User not found");
+    }
     return toDto(row);
   }
 
   async update(actor: AccessTokenPayload, id: string, dto: UpdateUserDto): Promise<UserDto> {
     const existing = await this.db.query.users.findFirst({ where: eq(users.id, id) });
-    if (!existing) throw new NotFoundException("User not found");
+    if (!existing) {
+      throw new NotFoundException("User not found");
+    }
 
     if (dto.email && dto.email !== existing.email) {
       const clash = await this.db.query.users.findFirst({ where: eq(users.email, dto.email) });
-      if (clash) throw new ConflictException("Email already registered");
+      if (clash) {
+        throw new ConflictException("Email already registered");
+      }
     }
 
     if (dto.companyId) {
@@ -94,7 +100,9 @@ export class UsersService {
         .from(companies)
         .where(eq(companies.id, dto.companyId))
         .limit(1);
-      if (!company) throw new NotFoundException("Company not found");
+      if (!company) {
+        throw new NotFoundException("Company not found");
+      }
     }
 
     const role = dto.role ?? existing.role;
@@ -122,7 +130,9 @@ export class UsersService {
       throw new ForbiddenException("Cannot delete yourself");
     }
     const deleted = await this.db.delete(users).where(eq(users.id, id)).returning({ id: users.id });
-    if (deleted.length === 0) throw new NotFoundException("User not found");
+    if (deleted.length === 0) {
+      throw new NotFoundException("User not found");
+    }
   }
 
   private listWhere(query: ListUsersQueryDto): SQL | undefined {
@@ -146,7 +156,7 @@ export class UsersService {
   }
 }
 
-function toDto(row: {
+type UserListRow = {
   id: string;
   email: string;
   name: string | null;
@@ -155,7 +165,9 @@ function toDto(row: {
   companyId: string | null;
   companyName: string | null;
   createdAt: Date;
-}): UserDto {
+};
+
+function toDto(row: UserListRow): UserDto {
   return {
     id: row.id,
     email: row.email,

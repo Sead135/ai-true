@@ -5,7 +5,11 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useIsMobile, useModalSize } from "@/lib/use-is-mobile";
 import { IconCancel, IconSave } from "./filter-icons";
 
-function FiltersIcon({ className = "size-5" }: { className?: string }) {
+type FiltersIconProps = {
+  className?: string;
+};
+
+function FiltersIcon({ className = "size-5" }: FiltersIconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -26,6 +30,22 @@ function countActive<T extends Record<string, unknown>>(values: T, defaults: T):
   }, 0);
 }
 
+type FiltersBarRenderCtx<T extends Record<string, unknown>> = {
+  values: T;
+  set: <K extends keyof T>(key: K, value: T[K]) => void;
+  patch: (next: Partial<T>) => void;
+};
+
+type FiltersBarProps<T extends Record<string, unknown>> = {
+  values: T;
+  defaults: T;
+  onChange: (next: T) => void;
+  search?: ReactNode;
+  children: (ctx: FiltersBarRenderCtx<T>) => ReactNode;
+  className?: string;
+  collapseOnMobile?: boolean;
+};
+
 export function FiltersBar<T extends Record<string, unknown>>({
   values,
   defaults,
@@ -34,30 +54,22 @@ export function FiltersBar<T extends Record<string, unknown>>({
   children,
   className,
   collapseOnMobile = true,
-}: {
-  values: T;
-  defaults: T;
-  onChange: (next: T) => void;
-  search?: ReactNode;
-  children: (ctx: {
-    values: T;
-    set: <K extends keyof T>(key: K, value: T[K]) => void;
-    patch: (next: Partial<T>) => void;
-  }) => ReactNode;
-  className?: string;
-  collapseOnMobile?: boolean;
-}) {
+}: FiltersBarProps<T>) {
   const mobile = useIsMobile();
   const size = useModalSize("md");
   const [draft, setDraft] = useState(values);
   const modal = useOverlayState({
     onOpenChange: (open) => {
-      if (open) setDraft(values);
+      if (open) {
+        setDraft(values);
+      }
     },
   });
 
   useEffect(() => {
-    if (!modal.isOpen) setDraft(values);
+    if (!modal.isOpen) {
+      setDraft(values);
+    }
   }, [values, modal.isOpen]);
 
   const active = useMemo(() => countActive(values, defaults), [values, defaults]);
@@ -127,7 +139,11 @@ export function FiltersBar<T extends Record<string, unknown>>({
                 <Modal.CloseTrigger />
               </Modal.Header>
               <Modal.Body className="filters-bar-modal-body">
-                {children({ values: draft, set: setDraftField, patch: patchDraft })}
+                {children({
+                  values: draft,
+                  set: setDraftField,
+                  patch: patchDraft,
+                })}
               </Modal.Body>
               <Modal.Footer className="flex gap-2">
                 <Button variant="ghost" className="btn-danger-plain flex-1" onPress={reset}>

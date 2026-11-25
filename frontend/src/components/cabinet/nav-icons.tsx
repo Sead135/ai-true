@@ -1,4 +1,8 @@
-export function IconChart({ className = "size-4" }: { className?: string }) {
+type IconProps = {
+  className?: string;
+};
+
+export function IconChart({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -13,7 +17,7 @@ export function IconChart({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconUsers({ className = "size-4" }: { className?: string }) {
+export function IconUsers({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -30,7 +34,7 @@ export function IconUsers({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconBranch({ className = "size-4" }: { className?: string }) {
+export function IconBranch({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -45,7 +49,7 @@ export function IconBranch({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconReviews({ className = "size-4" }: { className?: string }) {
+export function IconReviews({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -63,7 +67,7 @@ export function IconReviews({ className = "size-4" }: { className?: string }) {
   );
 }
 
-export function IconBuilding({ className = "size-4" }: { className?: string }) {
+export function IconBuilding({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"

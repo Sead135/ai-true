@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import type { Role } from "@ii/shared";
+import type { Role } from "./auth.types";
 import type { AuthenticatedRequest } from "./jwt-auth.guard";
 import { IS_PUBLIC_KEY } from "./public.decorator";
 import { ROLES_KEY } from "./roles.decorator";

@@ -6,11 +6,28 @@ import { BrandLogo } from "../brand-logo";
 
 const COLLAPSE_KEY = "cabinet-aside-collapsed";
 
-export function Skeleton({ className = "", style }: { className?: string; style?: CSSProperties }) {
+type SkeletonProps = {
+  className?: string;
+  style?: CSSProperties;
+};
+
+type CountProps = {
+  count?: number;
+};
+
+type PageHeadSkeletonProps = {
+  withFilters?: boolean;
+};
+
+type CabinetShellSkeletonProps = {
+  children: React.ReactNode;
+};
+
+export function Skeleton({ className = "", style }: SkeletonProps) {
   return <span className={`cabinet-skeleton ${className}`.trim()} style={style} aria-hidden />;
 }
 
-export function ListCardSkeleton({ count = 5 }: { count?: number }) {
+export function ListCardSkeleton({ count = 5 }: CountProps) {
   return (
     <ul className="cabinet-list" aria-busy="true" aria-label="Загрузка">
       {Array.from({ length: count }, (_, i) => (
@@ -23,7 +40,7 @@ export function ListCardSkeleton({ count = 5 }: { count?: number }) {
   );
 }
 
-export function MetricsSkeleton({ count = 4 }: { count?: number }) {
+export function MetricsSkeleton({ count = 4 }: CountProps) {
   return (
     <div className={`cabinet-metrics${count === 6 ? " cabinet-metrics--6" : ""}`} aria-busy="true">
       {Array.from({ length: count }, (_, i) => (
@@ -63,7 +80,7 @@ export function DetailSkeleton() {
   );
 }
 
-function PageHeadSkeleton({ withFilters = false }: { withFilters?: boolean }) {
+function PageHeadSkeleton({ withFilters = false }: PageHeadSkeletonProps) {
   return (
     <div className="cabinet-page-head">
       <div className={withFilters ? "cabinet-page-head-row" : undefined}>
@@ -79,7 +96,11 @@ function PageHeadSkeleton({ withFilters = false }: { withFilters?: boolean }) {
   );
 }
 
-export function DashboardPageSkeleton({ metrics = 6 }: { metrics?: number }) {
+type DashboardPageSkeletonProps = {
+  metrics?: number;
+};
+
+export function DashboardPageSkeleton({ metrics = 6 }: DashboardPageSkeletonProps) {
   return (
     <div className="cabinet-dashboard" aria-busy="true" aria-label="Загрузка">
       <PageHeadSkeleton withFilters />
@@ -97,7 +118,7 @@ export function DashboardPageSkeleton({ metrics = 6 }: { metrics?: number }) {
   );
 }
 
-export function ListPageSkeleton({ count = 5 }: { count?: number }) {
+export function ListPageSkeleton({ count = 5 }: CountProps) {
   return (
     <div aria-busy="true" aria-label="Загрузка">
       <PageHeadSkeleton />
@@ -111,7 +132,9 @@ export function ListPageSkeleton({ count = 5 }: { count?: number }) {
 
 export function AsideSkeleton() {
   const [collapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === "undefined") {
+      return false;
+    }
     try {
       return localStorage.getItem(COLLAPSE_KEY) === "1";
     } catch {
@@ -147,7 +170,7 @@ export function AsideSkeleton() {
   );
 }
 
-export function CabinetShellSkeleton({ children }: { children: React.ReactNode }) {
+export function CabinetShellSkeleton({ children }: CabinetShellSkeletonProps) {
   return (
     <div className="cabinet-root" aria-busy="true" aria-label="Загрузка кабинета">
       <header className="cabinet-mobile-bar">
@@ -167,7 +190,11 @@ export function CabinetShellSkeleton({ children }: { children: React.ReactNode }
 const LIST_PATHS = new Set(["/companies", "/branches", "/users", "/reviews"]);
 
 export function pageSkeletonForPath(pathname: string) {
-  if (pathname === "/") return <DashboardPageSkeleton />;
-  if (LIST_PATHS.has(pathname)) return <ListPageSkeleton />;
+  if (pathname === "/") {
+    return <DashboardPageSkeleton />;
+  }
+  if (LIST_PATHS.has(pathname)) {
+    return <ListPageSkeleton />;
+  }
   return <DetailSkeleton />;
 }

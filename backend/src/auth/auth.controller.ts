@@ -48,7 +48,7 @@ export class AuthController {
     @Body() body: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthSessionDto> {
-    assertRateLimit(`auth:${clientIp(req)}`);
+    assertRateLimit({ key: `auth:${clientIp(req)}` });
     const tokens = await this.auth.register(body.email, body.password);
     setAuthCookies(res, tokens);
     return { expiresIn: tokens.expiresIn };
@@ -65,7 +65,7 @@ export class AuthController {
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthSessionDto> {
-    assertRateLimit(`auth:${clientIp(req)}`);
+    assertRateLimit({ key: `auth:${clientIp(req)}` });
     const tokens = await this.auth.login(body.email, body.password);
     setAuthCookies(res, tokens);
     return { expiresIn: tokens.expiresIn };

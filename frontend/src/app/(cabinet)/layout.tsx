@@ -6,7 +6,11 @@ import { CabinetShell } from "@/components/cabinet/cabinet-shell";
 import { CabinetShellSkeleton, pageSkeletonForPath } from "@/components/cabinet/skeletons";
 import { fetchMe, type Me } from "@/lib/auth";
 
-export default function CabinetLayout({ children }: { children: React.ReactNode }) {
+type CabinetLayoutProps = {
+  children: React.ReactNode;
+};
+
+export default function CabinetLayout({ children }: CabinetLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [me, setMe] = useState<Me | null | undefined>(undefined);
@@ -15,7 +19,9 @@ export default function CabinetLayout({ children }: { children: React.ReactNode 
     let cancelled = false;
     fetchMe()
       .then((user) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         if (!user) {
           router.replace("/login");
           return;
@@ -23,7 +29,9 @@ export default function CabinetLayout({ children }: { children: React.ReactNode 
         setMe(user);
       })
       .catch(() => {
-        if (!cancelled) router.replace("/login");
+        if (!cancelled) {
+          router.replace("/login");
+        }
       });
     return () => {
       cancelled = true;
@@ -34,7 +42,9 @@ export default function CabinetLayout({ children }: { children: React.ReactNode 
     return <CabinetShellSkeleton>{pageSkeletonForPath(pathname)}</CabinetShellSkeleton>;
   }
 
-  if (!me) return null;
+  if (!me) {
+    return null;
+  }
 
   return (
     <CabinetShell me={me}>

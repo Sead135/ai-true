@@ -36,7 +36,9 @@ export default function BranchesPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (me.role !== "admin") return;
+    if (me.role !== "admin") {
+      return;
+    }
     listCompanies({ limit: 100 })
       .then((res) => setCompanies(res.items))
       .catch(() => setCompanies([]));
@@ -53,7 +55,9 @@ export default function BranchesPage() {
       limit,
     })
       .then((res) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setItems(res.items);
         setTotal(res.total);
       })
@@ -96,7 +100,11 @@ export default function BranchesPage() {
         values={{ status, companyId }}
         defaults={{ status: "", companyId: "" }}
         onChange={(next) => {
-          setQuery({ status: next.status, companyId: next.companyId, page: "1" });
+          setQuery({
+            status: next.status,
+            companyId: next.companyId,
+            page: "1",
+          });
         }}
         search={
           <ListSearch
@@ -140,36 +148,42 @@ export default function BranchesPage() {
       </FiltersBar>
 
       {error ? <p className="cabinet-error">{error}</p> : null}
-      {!items ? (
-        <ListCardSkeleton />
-      ) : items.length === 0 ? (
-        <p className="cabinet-empty">Филиалов пока нет</p>
-      ) : (
-        <ul className="cabinet-list">
-          {items.map((b) => (
-            <li key={b.id}>
-              <button
-                type="button"
-                onClick={() => openBranch(b.id)}
-                className="cabinet-list-card flex w-full items-start justify-between gap-3 text-left"
-              >
-                <span className="min-w-0">
-                  <span className="cabinet-list-title">{b.name}</span>
-                  <span className="cabinet-list-meta">
-                    <span>{b.city}</span>
-                    <span>{b.address}</span>
-                  </span>
-                </span>
-                <span
-                  className={`cabinet-status ${b.isActive ? "cabinet-status--ok" : "cabinet-status--mute"}`}
+      {(() => {
+        if (!items) {
+          return <ListCardSkeleton />;
+        }
+        if (items.length === 0) {
+          return <p className="cabinet-empty">Филиалов пока нет</p>;
+        }
+        return (
+          <ul className="cabinet-list">
+            {items.map((b) => (
+              <li key={b.id}>
+                <button
+                  type="button"
+                  onClick={() => openBranch(b.id)}
+                  className="cabinet-list-card flex w-full items-start justify-between gap-3 text-left"
                 >
-                  {b.isActive ? "Активен" : "Неактивен"}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                  <span className="min-w-0">
+                    <span className="cabinet-list-title">{b.name}</span>
+                    {b.city.trim() || b.address.trim() ? (
+                      <span className="cabinet-list-meta">
+                        {b.city.trim() ? <span>{b.city.trim()}</span> : null}
+                        {b.address.trim() ? <span>{b.address.trim()}</span> : null}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span
+                    className={`cabinet-status ${b.isActive ? "cabinet-status--ok" : "cabinet-status--mute"}`}
+                  >
+                    {b.isActive ? "Активен" : "Неактивен"}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        );
+      })()}
 
       <ListPagination
         page={page}

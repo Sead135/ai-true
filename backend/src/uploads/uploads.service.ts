@@ -9,7 +9,6 @@ import {
   type PresignUploadDto,
   type PresignUploadResponseDto,
 } from "./dto/presign-upload.dto";
-import { createS3Client } from "./s3.client";
 
 const EXT: Record<AllowedImageType, string> = {
   "image/png": "png",
@@ -26,7 +25,17 @@ export class UploadsService implements OnModuleInit {
   private readonly endpoint: string;
 
   constructor(private readonly config: ConfigService) {
-    this.s3 = createS3Client(config);
+    this.s3 = new S3Client({
+      region: config.getOrThrow<string>("AWS_REGION"),
+      endpoint: config.getOrThrow<string>("AWS_ENDPOINT_URL_S3"),
+      credentials: {
+        accessKeyId: config.getOrThrow<string>("AWS_ACCESS_KEY_ID"),
+        secretAccessKey: config.getOrThrow<string>("AWS_SECRET_ACCESS_KEY"),
+      },
+      forcePathStyle: true,
+      // Recent AWS SDK embeds empty-body checksum in presigned PUTs; disable unless required.
+      requestChecksumCalculation: "WHEN_REQUIRED",
+    });
     this.bucket = config.getOrThrow<string>("S3_BUCKET");
     this.endpoint = config.getOrThrow<string>("AWS_ENDPOINT_URL_S3").replace(/\/$/, "");
   }

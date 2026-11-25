@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { eachDate } from "../common/dates";
+import { eachDate, type BranchDateRange } from "../common/dates";
 import { between, hash } from "../common/mock-hash";
-import type { ReviewRow, ReviewsSource, ReviewStatus } from "./reviews-source";
+import type { ReviewRow, ReviewStatus } from "./reviews-source";
 
 const AUTHORS = [
   "Анна К.",
@@ -27,21 +27,22 @@ const TEXTS = [
 
 export function mockReviewsForDay(branchId: string, date: string): ReviewRow[] {
   const dayHash = hash(`${branchId}:${date}:reviews`);
-  const count = between(dayHash, 0, 3);
+  const count = between({ h: dayHash, min: 0, max: 3 });
   const rows: ReviewRow[] = [];
 
   for (let i = 0; i < count; i++) {
     const h = hash(`${branchId}:${date}:${i}`);
-    const rating = between(h, 1, 5);
-    const status: ReviewStatus = between(h >>> 4, 0, 1) === 0 ? "new" : "processed";
-    const hour = between(h >>> 8, 8, 21);
-    const minute = between(h >>> 12, 0, 59);
+    const rating = between({ h, min: 1, max: 5 });
+    const statusRoll = between({ h: h >>> 4, min: 0, max: 1 });
+    const status: ReviewStatus = statusRoll === 0 ? "new" : "processed";
+    const hour = between({ h: h >>> 8, min: 8, max: 21 });
+    const minute = between({ h: h >>> 12, min: 0, max: 59 });
 
     rows.push({
       branchId,
       rating,
-      text: TEXTS[between(h >>> 16, 0, TEXTS.length - 1)]!,
-      authorName: AUTHORS[between(h >>> 20, 0, AUTHORS.length - 1)]!,
+      text: TEXTS[between({ h: h >>> 16, min: 0, max: TEXTS.length - 1 })]!,
+      authorName: AUTHORS[between({ h: h >>> 20, min: 0, max: AUTHORS.length - 1 })]!,
       status,
       reviewedOn: new Date(
         `${date}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00.000Z`,
@@ -54,8 +55,9 @@ export function mockReviewsForDay(branchId: string, date: string): ReviewRow[] {
 }
 
 @Injectable()
-export class MockReviewsSource implements ReviewsSource {
-  async fetchReviews(branchIds: string[], from: string, to: string): Promise<ReviewRow[]> {
+export class MockReviewsSource {
+  async fetchReviews(range: BranchDateRange): Promise<ReviewRow[]> {
+    const { branchIds, from, to } = range;
     const dates = eachDate(from, to);
     const rows: ReviewRow[] = [];
     for (const branchId of branchIds) {

@@ -61,7 +61,9 @@ export default function ReviewsPage() {
       limit,
     })
       .then((res) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setItems(res.items);
         setTotal(res.total);
       })
@@ -163,35 +165,39 @@ export default function ReviewsPage() {
       </div>
 
       {error ? <p className="cabinet-error">{error}</p> : null}
-      {!items ? (
-        <ListCardSkeleton />
-      ) : items.length === 0 ? (
-        <p className="cabinet-empty">Отзывов за период нет</p>
-      ) : (
-        <ul className="cabinet-list">
-          {items.map((r) => (
-            <li key={r.id} className="cabinet-list-card">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="cabinet-list-title">{r.authorName}</p>
-                  <div className="cabinet-review-meta">
-                    <RatingStars rating={r.rating} />
-                    <span className="cabinet-review-date">
-                      {new Date(r.reviewedOn).toLocaleDateString("ru-RU")}
-                    </span>
+      {(() => {
+        if (!items) {
+          return <ListCardSkeleton />;
+        }
+        if (items.length === 0) {
+          return <p className="cabinet-empty">Отзывов за период нет</p>;
+        }
+        return (
+          <ul className="cabinet-list">
+            {items.map((r) => (
+              <li key={r.id} className="cabinet-list-card">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="cabinet-list-title">{r.authorName}</p>
+                    <div className="cabinet-review-meta">
+                      <RatingStars rating={r.rating} />
+                      <span className="cabinet-review-date">
+                        {new Date(r.reviewedOn).toLocaleDateString("ru-RU")}
+                      </span>
+                    </div>
                   </div>
+                  <span
+                    className={`cabinet-status ${r.status === "new" ? "cabinet-status--new" : "cabinet-status--ok"}`}
+                  >
+                    {STATUS_LABEL[r.status]}
+                  </span>
                 </div>
-                <span
-                  className={`cabinet-status ${r.status === "new" ? "cabinet-status--new" : "cabinet-status--ok"}`}
-                >
-                  {STATUS_LABEL[r.status]}
-                </span>
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/75">{r.text}</p>
-            </li>
-          ))}
-        </ul>
-      )}
+                <p className="mt-2 text-sm leading-relaxed text-foreground/75">{r.text}</p>
+              </li>
+            ))}
+          </ul>
+        );
+      })()}
 
       <ListPagination
         page={page}

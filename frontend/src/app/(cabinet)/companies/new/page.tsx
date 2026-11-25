@@ -12,7 +12,9 @@ export default function NewCompanyRedirectPage() {
   const { openCompany } = useEditModals();
 
   useEffect(() => {
-    if (me.role === "client") openCompany("new");
+    if (me.role === "client") {
+      openCompany("new");
+    }
     navigate("/");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

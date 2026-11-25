@@ -17,6 +17,15 @@ const empty: CompanyInput = {
   email: "",
 };
 
+type CompanyFormProps = {
+  initial?: Company;
+  submitLabel: string;
+  onSubmit: (data: CompanyInput) => Promise<void>;
+  formId?: string;
+  hideSubmit?: boolean;
+  onPendingChange?: (pending: boolean) => void;
+};
+
 export function CompanyForm({
   initial,
   submitLabel,
@@ -24,14 +33,7 @@ export function CompanyForm({
   formId,
   hideSubmit,
   onPendingChange,
-}: {
-  initial?: Company;
-  submitLabel: string;
-  onSubmit: (data: CompanyInput) => Promise<void>;
-  formId?: string;
-  hideSubmit?: boolean;
-  onPendingChange?: (pending: boolean) => void;
-}) {
+}: CompanyFormProps) {
   const [form, setForm] = useState<CompanyInput>(
     initial
       ? {

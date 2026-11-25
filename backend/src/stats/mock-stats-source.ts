@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { eachDate } from "../common/dates";
+import { eachDate, type BranchDateRange } from "../common/dates";
 import { between, hash } from "../common/mock-hash";
 import { mockReviewsForDay } from "../reviews/mock-reviews-source";
-import type { DailyStatsRow, StatsSource } from "./stats-source";
+import type { DailyStatsRow } from "./stats-source";
 
 export function mockDay(branchId: string, date: string): DailyStatsRow {
   const h = hash(`${branchId}:${date}`);
@@ -16,18 +16,19 @@ export function mockDay(branchId: string, date: string): DailyStatsRow {
   return {
     branchId,
     date,
-    views: between(h, 40, 280),
-    websiteClicks: between(h >>> 3, 5, 60),
-    calls: between(h >>> 5, 1, 25),
-    routes: between(h >>> 7, 2, 40),
+    views: between({ h, min: 40, max: 280 }),
+    websiteClicks: between({ h: h >>> 3, min: 5, max: 60 }),
+    calls: between({ h: h >>> 5, min: 1, max: 25 }),
+    routes: between({ h: h >>> 7, min: 2, max: 40 }),
     avgRating,
     reviewsCount,
   };
 }
 
 @Injectable()
-export class MockStatsSource implements StatsSource {
-  async fetchDaily(branchIds: string[], from: string, to: string): Promise<DailyStatsRow[]> {
+export class MockStatsSource {
+  async fetchDaily(range: BranchDateRange): Promise<DailyStatsRow[]> {
+    const { branchIds, from, to } = range;
     const dates = eachDate(from, to);
     const rows: DailyStatsRow[] = [];
     for (const branchId of branchIds) {

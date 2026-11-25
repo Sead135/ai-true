@@ -2,10 +2,7 @@ import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsIn, IsOptional, IsString, IsUUID } from "class-validator";
 import { ListPageQueryDto } from "../../common/list-page.query.dto";
-
-function emptyToUndefined({ value }: { value: unknown }) {
-  return value === "" || value === null ? undefined : value;
-}
+import { emptyToUndefined } from "../../common/transform";
 
 export class ListBranchesQueryDto extends ListPageQueryDto {
   @ApiPropertyOptional({ description: "Search by name, city, or address" })

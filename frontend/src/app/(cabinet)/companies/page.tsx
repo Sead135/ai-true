@@ -31,7 +31,9 @@ export default function CompaniesPage() {
     setError(null);
     listCompanies({ q: search || undefined, page, limit })
       .then((res) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setItems(res.items);
         setTotal(res.total);
       })
@@ -46,7 +48,9 @@ export default function CompaniesPage() {
     };
   }, [me.role, navigate, search, page, limit, revision]);
 
-  if (me.role !== "admin") return null;
+  if (me.role !== "admin") {
+    return null;
+  }
 
   return (
     <div>
@@ -64,43 +68,49 @@ export default function CompaniesPage() {
       </div>
 
       {error ? <p className="cabinet-error">{error}</p> : null}
-      {!items ? (
-        <ListCardSkeleton />
-      ) : items.length === 0 ? (
-        <p className="cabinet-empty">Компаний пока нет</p>
-      ) : (
-        <ul className="cabinet-list">
-          {items.map((c) => (
-            <li key={c.id}>
-              <button
-                type="button"
-                onClick={() => openCompany(c.id)}
-                className="cabinet-list-card flex w-full items-center gap-3 text-left"
-              >
-                {c.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={c.logoUrl}
-                    alt=""
-                    className="size-10 shrink-0 rounded-xl object-cover"
-                  />
-                ) : (
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--field-background)] text-sm font-bold text-[var(--color-signal)]">
-                    {c.name.charAt(0)}
+      {(() => {
+        if (!items) {
+          return <ListCardSkeleton />;
+        }
+        if (items.length === 0) {
+          return <p className="cabinet-empty">Компаний пока нет</p>;
+        }
+        return (
+          <ul className="cabinet-list">
+            {items.map((c) => (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  onClick={() => openCompany(c.id)}
+                  className="cabinet-list-card flex w-full items-center gap-3 text-left"
+                >
+                  {c.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={c.logoUrl}
+                      alt=""
+                      className="size-10 shrink-0 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--field-background)] text-sm font-bold text-[var(--color-signal)]">
+                      {c.name.charAt(0)}
+                    </span>
+                  )}
+                  <span className="min-w-0">
+                    <span className="cabinet-list-title">{c.name}</span>
+                    {c.city.trim() || c.email.trim() ? (
+                      <span className="cabinet-list-meta">
+                        {c.city.trim() ? <span>{c.city.trim()}</span> : null}
+                        {c.email.trim() ? <span>{c.email.trim()}</span> : null}
+                      </span>
+                    ) : null}
                   </span>
-                )}
-                <span className="min-w-0">
-                  <span className="cabinet-list-title">{c.name}</span>
-                  <span className="cabinet-list-meta">
-                    <span>{c.city}</span>
-                    <span>{c.email}</span>
-                  </span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        );
+      })()}
 
       <ListPagination
         page={page}

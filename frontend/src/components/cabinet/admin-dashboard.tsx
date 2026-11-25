@@ -9,7 +9,7 @@ import {
   fetchAdminSummary,
   type AdminSummary,
 } from "@/lib/stats";
-import { toastError } from "@/lib/toast";
+import { toast } from "@heroui/react";
 import { DayBars } from "./day-bars";
 import { MetricChartCard } from "./metric-chart-card";
 import { MetricChartModal } from "./metric-chart-modal";
@@ -39,10 +39,14 @@ export function AdminDashboard() {
     let cancelled = false;
     fetchAdminSummary()
       .then((data) => {
-        if (!cancelled) setSummary(data);
+        if (!cancelled) {
+          setSummary(data);
+        }
       })
       .catch((err: { message?: string }) => {
-        if (!cancelled) toastError(err.message ?? "Ошибка загрузки");
+        if (!cancelled) {
+          toast.danger(err.message ?? "Ошибка загрузки");
+        }
       });
     return () => {
       cancelled = true;
@@ -59,11 +63,15 @@ export function AdminDashboard() {
       }),
     )
       .then((entries) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setSeriesMap(Object.fromEntries(entries));
       })
       .catch((err: { message?: string }) => {
-        if (!cancelled) toastError(err.message ?? "Ошибка графиков");
+        if (!cancelled) {
+          toast.danger(err.message ?? "Ошибка графиков");
+        }
       });
     return () => {
       cancelled = true;
@@ -72,8 +80,14 @@ export function AdminDashboard() {
 
   const loadModal = useCallback(
     async (rangeFrom: string, rangeTo: string) => {
-      if (!modalMetric) return [];
-      const res = await fetchAdminSeries({ metric: modalMetric, from: rangeFrom, to: rangeTo });
+      if (!modalMetric) {
+        return [];
+      }
+      const res = await fetchAdminSeries({
+        metric: modalMetric,
+        from: rangeFrom,
+        to: rangeTo,
+      });
       return res.series;
     },
     [modalMetric],
@@ -129,7 +143,9 @@ export function AdminDashboard() {
       <MetricChartModal
         open={modalMetric !== null}
         onOpenChange={(open) => {
-          if (!open) setModalMetric(null);
+          if (!open) {
+            setModalMetric(null);
+          }
         }}
         title={modalMetric ? LABELS[modalMetric] : ""}
         loadSeries={loadModal}

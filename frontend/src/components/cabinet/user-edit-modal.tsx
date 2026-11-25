@@ -1,34 +1,30 @@
 "use client";
 
-import { Button, FieldError, Input, Label, TextField, Modal, useOverlayState } from "@heroui/react";
+import { Button, Modal, useOverlayState } from "@heroui/react";
 import { IconSave, IconTrash } from "./filter-icons";
 import { useEffect, useState } from "react";
 import { listCompanies, type Company } from "@/lib/companies";
 import { useModalSize } from "@/lib/use-is-mobile";
 import { deleteUser, getUser, updateUser, type UserRow } from "@/lib/users";
-import { FilterComboBox } from "./filter-combo-box";
-import { LogoNameFields } from "./logo-name-fields";
 import { DetailSkeleton } from "./skeletons";
+import { USER_EDIT_FORM_ID, UserEditForm } from "./user-edit-form";
 
-const FORM_ID = "user-edit-form";
-
-export function UserEditModal({
-  userId,
-  onClose,
-  onSaved,
-  onDeleted,
-}: {
+type UserEditModalProps = {
   userId: string | null;
   onClose: () => void;
   onSaved: (user: UserRow) => void;
   onDeleted: (userId: string) => void;
-}) {
+};
+
+export function UserEditModal({ userId, onClose, onSaved, onDeleted }: UserEditModalProps) {
   const size = useModalSize("md");
   const open = userId !== null;
   const state = useOverlayState({
     isOpen: open,
     onOpenChange: (next) => {
-      if (!next) onClose();
+      if (!next) {
+        onClose();
+      }
     },
   });
 
@@ -54,7 +50,9 @@ export function UserEditModal({
     setPassword("");
     Promise.all([getUser(userId), listCompanies({ limit: 100 })])
       .then(([u, page]) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setUser(u);
         setName(u.name ?? "");
         setAvatarUrl(u.avatarUrl);
@@ -64,7 +62,9 @@ export function UserEditModal({
         setCompanies(page.items);
       })
       .catch((err: { message?: string }) => {
-        if (!cancelled) setError(err.message ?? "Не найдено");
+        if (!cancelled) {
+          setError(err.message ?? "Не найдено");
+        }
       });
     return () => {
       cancelled = true;
@@ -73,7 +73,9 @@ export function UserEditModal({
 
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!userId) return;
+    if (!userId) {
+      return;
+    }
     setPending(true);
     setError(null);
     try {
@@ -99,8 +101,12 @@ export function UserEditModal({
   }
 
   async function onDelete() {
-    if (!userId || !user) return;
-    if (!confirm(`Удалить пользователя ${user.email}?`)) return;
+    if (!userId || !user) {
+      return;
+    }
+    if (!confirm(`Удалить пользователя ${user.email}?`)) {
+      return;
+    }
     setPending(true);
     try {
       await deleteUser(userId);
@@ -125,76 +131,34 @@ export function UserEditModal({
               {error && !user ? <p className="text-sm text-red-500">{error}</p> : null}
               {!user && !error ? <DetailSkeleton /> : null}
               {user ? (
-                <form id={FORM_ID} onSubmit={onSave} className="auth-fields flex flex-col">
-                  <LogoNameFields
-                    name={name}
-                    logoUrl={avatarUrl}
-                    onNameChange={setName}
-                    onLogoChange={setAvatarUrl}
-                    disabled={pending}
-                    nameLabel="ФИО"
-                    nameRequired={false}
-                    imageLabel="Аватар"
-                    imageAriaLabel="Изменить аватар"
-                    removeLabel="Убрать аватар"
-                  />
-
-                  <TextField
-                    isRequired
-                    value={email}
-                    onChange={setEmail}
-                    isDisabled={pending}
-                    fullWidth
-                  >
-                    <Label>Email</Label>
-                    <Input type="email" />
-                    <FieldError />
-                  </TextField>
-
-                  <FilterComboBox
-                    labelVisible
-                    label="Роль"
-                    placeholder="Роль"
-                    value={role}
-                    onChange={(v) => setRole(v as "admin" | "client")}
-                    options={[
-                      { id: "client", label: "client" },
-                      { id: "admin", label: "admin" },
-                    ]}
-                  />
-
-                  {role === "client" ? (
-                    <FilterComboBox
-                      labelVisible
-                      label="Компания"
-                      placeholder="Без компании"
-                      value={companyId}
-                      onChange={setCompanyId}
-                      options={[
-                        { id: "", label: "Без компании" },
-                        ...companies.map((c) => ({ id: c.id, label: c.name })),
-                      ]}
-                    />
-                  ) : null}
-
-                  <TextField value={password} onChange={setPassword} isDisabled={pending} fullWidth>
-                    <Label>Новый пароль</Label>
-                    <Input
-                      type="password"
-                      placeholder="Оставьте пустым, чтобы не менять"
-                      minLength={6}
-                    />
-                  </TextField>
-
-                  {error ? (
-                    <p className="auth-error px-3 py-2 text-sm text-red-600">{error}</p>
-                  ) : null}
-                </form>
+                <UserEditForm
+                  pending={pending}
+                  error={error}
+                  name={name}
+                  avatarUrl={avatarUrl}
+                  email={email}
+                  role={role}
+                  companyId={companyId}
+                  password={password}
+                  companies={companies}
+                  onNameChange={setName}
+                  onAvatarChange={setAvatarUrl}
+                  onEmailChange={setEmail}
+                  onRoleChange={setRole}
+                  onCompanyIdChange={setCompanyId}
+                  onPasswordChange={setPassword}
+                  onSubmit={onSave}
+                />
               ) : null}
             </Modal.Body>
             {user ? (
               <Modal.Footer className="flex w-full flex-col gap-2">
-                <Button type="submit" form={FORM_ID} isDisabled={pending} className="w-full">
+                <Button
+                  type="submit"
+                  form={USER_EDIT_FORM_ID}
+                  isDisabled={pending}
+                  className="w-full"
+                >
                   <IconSave />
                   {pending ? "Сохранение…" : "Сохранить"}
                 </Button>

@@ -1,32 +1,19 @@
 "use client";
 
-import { Button, Chip, Input, Label, TextField, Modal, useOverlayState } from "@heroui/react";
+import { Button, Chip, Modal, useOverlayState } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { logout, profileDisplayName, updateProfile, type AuthError, type Me } from "@/lib/auth";
-import { uploadImage, validateImageFile } from "@/lib/uploads";
+import { logout, profileDisplayName } from "@/lib/auth";
 import { useModalSize } from "@/lib/use-is-mobile";
-import { IconCancel, IconSave } from "./filter-icons";
-import { ImageDropArea } from "./image-drop-area";
+import { AccountAvatarModal, AvatarFace } from "./account-avatar-modal";
+import { AccountNameModal } from "./account-name-modal";
 import { useSession } from "./session-context";
+import { UploadIcon } from "./upload-icon";
 
-function UploadIcon({ className = "size-5" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden
-    >
-      <path d="M12 16V6M8.5 9.5 12 6l3.5 3.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M5 18h14" strokeLinecap="round" />
-    </svg>
-  );
-}
+type IconProps = {
+  className?: string;
+};
 
-function PencilIcon({ className = "size-4" }: { className?: string }) {
+function PencilIcon({ className = "size-4" }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -42,119 +29,24 @@ function PencilIcon({ className = "size-4" }: { className?: string }) {
   );
 }
 
-function AvatarFace({ me, url }: { me: Me; url: string | null }) {
-  const display = profileDisplayName(me);
-  const initial = display.charAt(0).toUpperCase() || me.email.charAt(0).toUpperCase();
-  if (url) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={url} alt="" className="size-full object-cover" />;
-  }
-  return <>{initial}</>;
-}
+type AccountMenuProps = {
+  collapsed?: boolean;
+};
 
-export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
+export function AccountMenu({ collapsed = false }: AccountMenuProps) {
   const { me, setMe } = useSession();
   const router = useRouter();
   const size = useModalSize("sm");
 
-  const [avatarDraft, setAvatarDraft] = useState<string | null>(me.avatarUrl);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarUrlMode, setAvatarUrlMode] = useState(false);
-  const [avatarUrlInput, setAvatarUrlInput] = useState("");
-  const [avatarPending, setAvatarPending] = useState(false);
-  const [avatarError, setAvatarError] = useState<string | null>(null);
-  const [nameDraft, setNameDraft] = useState(me.name ?? "");
-  const [namePending, setNamePending] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
-
-  function revokeAvatarPreview() {
-    if (avatarDraft?.startsWith("blob:")) URL.revokeObjectURL(avatarDraft);
-  }
-
   const settings = useOverlayState();
-  const avatarModal = useOverlayState({
-    onOpenChange: (open) => {
-      if (open) {
-        revokeAvatarPreview();
-        setAvatarDraft(me.avatarUrl);
-        setAvatarFile(null);
-        setAvatarUrlMode(false);
-        setAvatarUrlInput(me.avatarUrl?.startsWith("http") ? me.avatarUrl : "");
-        setAvatarError(null);
-      }
-    },
-  });
-  const nameModal = useOverlayState({
-    onOpenChange: (open) => {
-      if (open) {
-        setNameDraft(me.name ?? "");
-        setNameError(null);
-      }
-    },
-  });
+  const avatarModal = useOverlayState();
+  const nameModal = useOverlayState();
 
   async function onLogout() {
     await logout();
     settings.setOpen(false);
     router.replace("/login");
     router.refresh();
-  }
-
-  function onPickFile(file: File) {
-    const invalid = validateImageFile(file);
-    if (invalid) {
-      setAvatarError(invalid);
-      return;
-    }
-    revokeAvatarPreview();
-    setAvatarFile(file);
-    setAvatarDraft(URL.createObjectURL(file));
-    setAvatarUrlMode(false);
-    setAvatarError(null);
-  }
-
-  async function saveAvatar() {
-    setAvatarPending(true);
-    setAvatarError(null);
-    try {
-      let next = avatarDraft;
-      if (avatarUrlMode) {
-        const url = avatarUrlInput.trim();
-        if (!url) {
-          setAvatarError("Вставьте ссылку на изображение");
-          setAvatarPending(false);
-          return;
-        }
-        next = url;
-      } else if (avatarFile) {
-        next = await uploadImage("avatar", avatarFile);
-      }
-      const updated = await updateProfile({ avatarUrl: next });
-      revokeAvatarPreview();
-      setMe(updated);
-      setAvatarDraft(updated.avatarUrl);
-      setAvatarFile(null);
-      setAvatarPending(false);
-      avatarModal.setOpen(false);
-    } catch (err) {
-      setAvatarError((err as AuthError).message ?? "Не удалось сохранить аватар");
-      setAvatarPending(false);
-    }
-  }
-
-  async function saveName() {
-    setNamePending(true);
-    setNameError(null);
-    try {
-      const updated = await updateProfile({ name: nameDraft.trim() });
-      setMe(updated);
-      setNameDraft(updated.name ?? "");
-      setNamePending(false);
-      nameModal.setOpen(false);
-    } catch (err) {
-      setNameError((err as AuthError).message ?? "Не удалось сохранить ФИО");
-      setNamePending(false);
-    }
   }
 
   const trigger = collapsed ? (
@@ -267,121 +159,8 @@ export function AccountMenu({ collapsed = false }: { collapsed?: boolean }) {
         </Modal.Backdrop>
       </Modal>
 
-      <Modal state={avatarModal}>
-        <Modal.Backdrop isDismissable>
-          <Modal.Container size={size} placement="center" scroll="inside">
-            <Modal.Dialog>
-              <Modal.Header>
-                <Modal.Heading className="text-lg font-semibold">Аватар</Modal.Heading>
-                <Modal.CloseTrigger />
-              </Modal.Header>
-              <Modal.Body className="flex flex-col gap-4">
-                <ImageDropArea
-                  preview={<AvatarFace me={me} url={avatarDraft} />}
-                  disabled={avatarPending}
-                  onFile={onPickFile}
-                  hint="Перетащите изображение сюда или нажмите. PNG, JPG, WebP, GIF · до 5 МБ"
-                />
-
-                {!avatarUrlMode ? (
-                  <Button
-                    variant="ghost"
-                    className="w-full"
-                    isDisabled={avatarPending}
-                    onPress={() => setAvatarUrlMode(true)}
-                  >
-                    Загрузить по ссылке
-                  </Button>
-                ) : (
-                  <TextField
-                    value={avatarUrlInput}
-                    onChange={setAvatarUrlInput}
-                    isDisabled={avatarPending}
-                    fullWidth
-                  >
-                    <Label>URL картинки</Label>
-                    <Input type="url" placeholder="https://…" />
-                  </TextField>
-                )}
-
-                {avatarDraft ? (
-                  <Button
-                    variant="ghost"
-                    className="w-full"
-                    isDisabled={avatarPending}
-                    onPress={() => {
-                      revokeAvatarPreview();
-                      setAvatarDraft(null);
-                      setAvatarFile(null);
-                      setAvatarUrlInput("");
-                      setAvatarUrlMode(false);
-                      setAvatarError(null);
-                    }}
-                  >
-                    Убрать аватар
-                  </Button>
-                ) : null}
-
-                {avatarError ? <p className="text-sm text-red-500">{avatarError}</p> : null}
-              </Modal.Body>
-              <Modal.Footer className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  className="btn-danger-plain flex-1"
-                  isDisabled={avatarPending}
-                  onPress={() => avatarModal.setOpen(false)}
-                >
-                  <IconCancel />
-                  Отменить
-                </Button>
-                <Button className="flex-1" isDisabled={avatarPending} onPress={saveAvatar}>
-                  <IconSave />
-                  {avatarPending ? "Сохранение…" : "Сохранить"}
-                </Button>
-              </Modal.Footer>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
-
-      <Modal state={nameModal}>
-        <Modal.Backdrop isDismissable>
-          <Modal.Container size={size} placement="center" scroll="inside">
-            <Modal.Dialog>
-              <Modal.Header>
-                <Modal.Heading className="text-lg font-semibold">Изменение ФИО</Modal.Heading>
-                <Modal.CloseTrigger />
-              </Modal.Header>
-              <Modal.Body className="flex flex-col gap-4">
-                <TextField
-                  value={nameDraft}
-                  onChange={setNameDraft}
-                  isDisabled={namePending}
-                  fullWidth
-                >
-                  <Input placeholder="Иван Иванов" aria-label="ФИО" />
-                </TextField>
-                {nameError ? <p className="text-sm text-red-500">{nameError}</p> : null}
-              </Modal.Body>
-              <Modal.Footer className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  className="btn-danger-plain flex-1"
-                  isDisabled={namePending}
-                  onPress={() => nameModal.setOpen(false)}
-                >
-                  <IconCancel />
-                  Отменить
-                </Button>
-                <Button className="flex-1" isDisabled={namePending} onPress={saveName}>
-                  <IconSave />
-                  {namePending ? "Сохранение…" : "Сохранить"}
-                </Button>
-              </Modal.Footer>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+      <AccountAvatarModal state={avatarModal} me={me} size={size} onProfileUpdated={setMe} />
+      <AccountNameModal state={nameModal} me={me} size={size} onProfileUpdated={setMe} />
     </>
   );
 }

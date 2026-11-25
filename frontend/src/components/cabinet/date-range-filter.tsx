@@ -48,7 +48,9 @@ export function DateRangeFilter({
         value={{ start: parseDate(from), end: parseDate(to) }}
         maxValue={parseDate(max)}
         onChange={(range) => {
-          if (!range?.start || !range?.end) return;
+          if (!range?.start || !range?.end) {
+            return;
+          }
           onChange({ from: range.start.toString(), to: range.end.toString() });
         }}
       >

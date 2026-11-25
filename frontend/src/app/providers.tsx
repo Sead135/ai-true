@@ -5,7 +5,11 @@ import { ThemeProvider } from "next-themes";
 import { PageTransitionProvider } from "@/components/page-transition";
 import { PwaRegister } from "@/components/pwa-register";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+type ProvidersProps = {
+  children: React.ReactNode;
+};
+
+export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <Toast.Provider placement="top end" />

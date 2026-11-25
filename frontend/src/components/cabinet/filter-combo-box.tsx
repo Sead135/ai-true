@@ -52,8 +52,13 @@ export function FilterComboBox({
     label: o.label,
     content: o.content,
   }));
-  const selectedKey =
-    value === "" ? (normalized.some((o) => o.id === EMPTY) ? EMPTY : null) : value;
+  let selectedKey: string | null;
+  if (value === "") {
+    const hasEmptyOption = normalized.some((o) => o.id === EMPTY);
+    selectedKey = hasEmptyOption ? EMPTY : null;
+  } else {
+    selectedKey = value;
+  }
   const selected = normalized.find((o) => o.id === selectedKey);
   const selectedDisplay = selected?.content ?? selected?.label ?? placeholder ?? label;
 
@@ -85,9 +90,13 @@ export function FilterComboBox({
             selectionMode="single"
             selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
             onSelectionChange={(keys: Selection) => {
-              if (keys === "all") return;
+              if (keys === "all") {
+                return;
+              }
               const next = String([...keys][0] ?? "");
-              if (!next) return;
+              if (!next) {
+                return;
+              }
               onChange(next === EMPTY ? "" : next);
             }}
           >

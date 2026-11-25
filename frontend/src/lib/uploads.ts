@@ -25,7 +25,9 @@ export function validateImageFile(file: File): string | null {
 /** Presign → PUT to Neon Object Storage → public URL. */
 export async function uploadImage(kind: UploadKind, file: File): Promise<string> {
   const invalid = validateImageFile(file);
-  if (invalid) throw { status: 400, message: invalid };
+  if (invalid) {
+    throw { status: 400, message: invalid };
+  }
 
   const { uploadUrl, publicUrl, headers } = await api<PresignResponse>("/uploads/presign", {
     method: "POST",
@@ -42,7 +44,10 @@ export async function uploadImage(kind: UploadKind, file: File): Promise<string>
     body: file,
   });
   if (!put.ok) {
-    throw { status: put.status, message: "Не удалось загрузить файл в хранилище" };
+    throw {
+      status: put.status,
+      message: "Не удалось загрузить файл в хранилище",
+    };
   }
 
   return publicUrl;

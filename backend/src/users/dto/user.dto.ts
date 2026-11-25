@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import type { Role } from "@ii/shared";
+import type { Role } from "../../auth/auth.types";
 
 export class UserDto {
   @ApiProperty({ format: "uuid" })
