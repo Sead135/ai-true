@@ -2,7 +2,7 @@
 
 import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { type AuthError, login, register } from "@/lib/auth";
 import { markOnboardingPending } from "@/lib/onboarding";
 import { usePageTransition } from "./page-transition";
@@ -20,7 +20,16 @@ function safeNext(raw: string | null): string {
   return raw;
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
+/** useSearchParams needs Suspense for static prerender (/login, /register). */
+export function AuthForm(props: AuthFormProps) {
+  return (
+    <Suspense>
+      <AuthFormInner {...props} />
+    </Suspense>
+  );
+}
+
+function AuthFormInner({ mode }: AuthFormProps) {
   const { navigate } = usePageTransition();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
