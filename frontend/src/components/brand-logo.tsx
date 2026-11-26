@@ -16,20 +16,14 @@ export function BrandLogo({ className = "h-8 w-auto", mark = false }: BrandLogoP
   useEffect(() => setMounted(true), []);
 
   const dark = mounted && resolvedTheme === "dark";
-  let src: string;
-  if (mark) {
-    src = dark ? "/logo-mark-light.svg" : "/logo-mark.svg";
-  } else {
-    src = dark ? "/logo-light.svg" : "/logo.svg";
-  }
+  const src = dark ? "/logo-mark-light.svg" : "/logo-mark.svg";
 
   return (
-    <img
-      src={src}
-      alt="Истинный интеллект"
-      width={mark ? 248 : 233}
-      height={mark ? 120 : 60}
-      className={className}
-    />
+    <span className={`inline-flex items-center gap-2 ${className}`} role="img" aria-label="Точки">
+      <img src={src} alt="" width={32} height={32} className="h-full w-auto shrink-0" aria-hidden />
+      {mark ? null : (
+        <span className="text-[0.95em] leading-none font-semibold tracking-[-0.03em]">Точки</span>
+      )}
+    </span>
   );
 }

@@ -47,9 +47,9 @@ async function bootstrap() {
   });
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle("II Analytics API")
+    .setTitle("Точки API")
     .setDescription(
-      "Аналитический кабинет «Истинный интеллект». Auth: httpOnly cookies `access_token` / `refresh_token` (Bearer тоже принимается).",
+      "Аналитический кабинет «Точки». Auth: httpOnly cookies `access_token` / `refresh_token` (Bearer тоже принимается).",
     )
     .setVersion("0.1.0")
     .addCookieAuth("access_token")

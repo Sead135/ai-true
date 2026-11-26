@@ -6,6 +6,6 @@ export class AppController {
   @Public()
   @Get()
   getHello(): string {
-    return "II Analytics API";
+    return "Точки API";
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "ii-test",
+  "name": "tochki",
   "private": true,
   "scripts": {
     "dev:backend": "npm run start:dev --prefix backend",

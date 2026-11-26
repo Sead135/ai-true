@@ -102,7 +102,7 @@ async function seed() {
     await db.insert(users).values([
       {
         id: ADMIN_ID,
-        email: "admin@ii.local",
+        email: "admin@demo.local",
         passwordHash,
         name: "Администратор ИИ",
         role: "admin",
@@ -163,7 +163,7 @@ async function seed() {
     );
 
     console.log("Seed OK");
-    console.log("  admin@ii.local / password123  (admin)");
+    console.log("  admin@demo.local / password123  (admin)");
     console.log("  client@severny.local / password123  (client → Северный Вкус)");
     console.log(
       `  companies: 2 · branches: 3 · daily_metrics: ${rows.length} · reviews: ${reviewRows.length} (${fromStr}…${toStr})`,

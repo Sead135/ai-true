@@ -10,13 +10,13 @@ const onest = Onest({
 });
 
 export const metadata: Metadata = {
-  title: "Истинный интеллект",
-  description: "Аналитический кабинет",
-  applicationName: "Истинный интеллект",
+  title: "Точки",
+  description: "Аналитический кабинет присутствия на геосервисах",
+  applicationName: "Точки",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "ИИ",
+    title: "Точки",
   },
   formatDetection: {
     telephone: false,

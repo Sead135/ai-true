@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Истинный интеллект",
-    short_name: "ИИ",
+    name: "Точки",
+    short_name: "Точки",
     description: "Аналитический кабинет присутствия на геосервисах",
     start_url: "/",
     scope: "/",

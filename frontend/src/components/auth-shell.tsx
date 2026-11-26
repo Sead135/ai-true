@@ -24,7 +24,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
 
         <div className="max-w-lg">
           <h1 className="auth-brand-title text-[3.35rem] leading-[1.05] font-semibold tracking-[-0.04em]">
-            Истинный интеллект
+            Точки
           </h1>
           <p className="auth-brand-copy mt-5 max-w-[21rem] text-[15px] leading-relaxed">
             Показатели присутствия на геосервисах — просмотры, звонки, маршруты и рейтинг по
