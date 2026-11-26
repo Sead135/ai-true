@@ -65,3 +65,7 @@ export function updateCompany(id: string, body: Partial<CompanyInput>) {
     body: JSON.stringify(body),
   });
 }
+
+export function deleteCompany(id: string) {
+  return api<void>(`/companies/${id}`, { method: "DELETE" });
+}

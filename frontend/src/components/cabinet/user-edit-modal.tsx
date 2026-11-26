@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { listCompanies, type Company } from "@/lib/companies";
 import { useModalSize } from "@/lib/use-is-mobile";
 import { deleteUser, getUser, updateUser, type UserRow } from "@/lib/users";
+import { ConfirmModal } from "./confirm-modal";
 import { DetailSkeleton } from "./skeletons";
 import { USER_EDIT_FORM_ID, UserEditForm } from "./user-edit-form";
 
@@ -38,8 +39,10 @@ export function UserEditModal({ userId, onClose, onSaved, onDeleted }: UserEditM
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const confirm = useOverlayState();
 
   useEffect(() => {
+    confirm.setOpen(false);
     if (!userId) {
       setUser(null);
       return;
@@ -100,83 +103,79 @@ export function UserEditModal({ userId, onClose, onSaved, onDeleted }: UserEditM
     }
   }
 
-  async function onDelete() {
-    if (!userId || !user) {
-      return;
-    }
-    if (!confirm(`Удалить пользователя ${user.email}?`)) {
-      return;
-    }
-    setPending(true);
-    try {
-      await deleteUser(userId);
-      onDeleted(userId);
-      onClose();
-    } catch (err) {
-      setError((err as { message?: string }).message ?? "Не удалось удалить");
-      setPending(false);
-    }
-  }
-
   return (
-    <Modal state={state}>
-      <Modal.Backdrop isDismissable>
-        <Modal.Container size={size} placement="center" scroll="inside">
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading className="text-lg font-semibold">Пользователь</Modal.Heading>
-              <Modal.CloseTrigger />
-            </Modal.Header>
-            <Modal.Body className={size === "full" ? undefined : "max-h-[70vh] overflow-y-auto"}>
-              {error && !user ? <p className="text-sm text-red-500">{error}</p> : null}
-              {!user && !error ? <DetailSkeleton /> : null}
+    <>
+      <Modal state={state}>
+        <Modal.Backdrop isDismissable={!confirm.isOpen}>
+          <Modal.Container size={size} placement="center" scroll="inside">
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading className="text-lg font-semibold">Пользователь</Modal.Heading>
+                <Modal.CloseTrigger />
+              </Modal.Header>
+              <Modal.Body className={size === "full" ? undefined : "max-h-[70vh] overflow-y-auto"}>
+                {error && !user ? <p className="text-sm text-red-500">{error}</p> : null}
+                {!user && !error ? <DetailSkeleton /> : null}
+                {user ? (
+                  <UserEditForm
+                    pending={pending}
+                    error={error}
+                    name={name}
+                    avatarUrl={avatarUrl}
+                    email={email}
+                    role={role}
+                    companyId={companyId}
+                    password={password}
+                    companies={companies}
+                    onNameChange={setName}
+                    onAvatarChange={setAvatarUrl}
+                    onEmailChange={setEmail}
+                    onRoleChange={setRole}
+                    onCompanyIdChange={setCompanyId}
+                    onPasswordChange={setPassword}
+                    onSubmit={onSave}
+                  />
+                ) : null}
+              </Modal.Body>
               {user ? (
-                <UserEditForm
-                  pending={pending}
-                  error={error}
-                  name={name}
-                  avatarUrl={avatarUrl}
-                  email={email}
-                  role={role}
-                  companyId={companyId}
-                  password={password}
-                  companies={companies}
-                  onNameChange={setName}
-                  onAvatarChange={setAvatarUrl}
-                  onEmailChange={setEmail}
-                  onRoleChange={setRole}
-                  onCompanyIdChange={setCompanyId}
-                  onPasswordChange={setPassword}
-                  onSubmit={onSave}
-                />
+                <Modal.Footer className="flex w-full flex-col gap-2">
+                  <Button
+                    type="submit"
+                    form={USER_EDIT_FORM_ID}
+                    isDisabled={pending}
+                    className="w-full"
+                  >
+                    <IconSave />
+                    {pending ? "Сохранение…" : "Сохранить"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    isDisabled={pending}
+                    className="btn-danger-plain w-full"
+                    onPress={() => confirm.setOpen(true)}
+                  >
+                    <IconTrash />
+                    Удалить
+                  </Button>
+                </Modal.Footer>
               ) : null}
-            </Modal.Body>
-            {user ? (
-              <Modal.Footer className="flex w-full flex-col gap-2">
-                <Button
-                  type="submit"
-                  form={USER_EDIT_FORM_ID}
-                  isDisabled={pending}
-                  className="w-full"
-                >
-                  <IconSave />
-                  {pending ? "Сохранение…" : "Сохранить"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  isDisabled={pending}
-                  className="btn-danger-plain w-full"
-                  onPress={onDelete}
-                >
-                  <IconTrash />
-                  Удалить
-                </Button>
-              </Modal.Footer>
-            ) : null}
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
-    </Modal>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+      {user ? (
+        <ConfirmModal
+          state={confirm}
+          title="Удалить пользователя?"
+          message={`Точно удалить пользователя ${user.email}? Вместе с ним будут удалены компания и филиалы.`}
+          onConfirm={async () => {
+            await deleteUser(user.id);
+            onDeleted(user.id);
+            onClose();
+          }}
+        />
+      ) : null}
+    </>
   );
 }

@@ -11,6 +11,7 @@ export const companies = pgTable("companies", {
   website: varchar("website", { length: 512 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 export type Company = typeof companies.$inferSelect;

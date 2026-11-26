@@ -8,7 +8,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcrypt";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { IssuedTokens } from "./auth-cookies.js";
 import type { AccessTokenPayload, RefreshTokenPayload } from "./auth.types.js";
 import type { MeDto } from "./dto/me.dto.js";
@@ -17,6 +17,7 @@ import type { JwtSignOptions } from "@nestjs/jwt";
 import { DRIZZLE } from "../database/database.module.js";
 import type { createDb } from "../database/db.js";
 import { users, type User } from "../database/schema/index.js";
+import { softDeleteUser } from "../database/soft-delete.js";
 
 type Db = ReturnType<typeof createDb>["db"];
 
@@ -32,7 +33,7 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<IssuedTokens> {
     const user = await this.db.query.users.findFirst({
-      where: eq(users.email, email),
+      where: and(eq(users.email, email), isNull(users.deletedAt)),
     });
 
     if (!user || !(await compare(password, user.passwordHash))) {
@@ -44,7 +45,7 @@ export class AuthService {
 
   async register(email: string, password: string): Promise<IssuedTokens> {
     const existing = await this.db.query.users.findFirst({
-      where: eq(users.email, email),
+      where: and(eq(users.email, email), isNull(users.deletedAt)),
     });
     if (existing) {
       throw new ConflictException("Email already registered");
@@ -78,7 +79,7 @@ export class AuthService {
     }
 
     const user = await this.db.query.users.findFirst({
-      where: eq(users.id, payload.sub),
+      where: and(eq(users.id, payload.sub), isNull(users.deletedAt)),
     });
     if (!user) {
       throw new UnauthorizedException("Invalid refresh token");
@@ -88,7 +89,9 @@ export class AuthService {
   }
 
   async me(actor: AccessTokenPayload): Promise<MeDto> {
-    const user = await this.db.query.users.findFirst({ where: eq(users.id, actor.sub) });
+    const user = await this.db.query.users.findFirst({
+      where: and(eq(users.id, actor.sub), isNull(users.deletedAt)),
+    });
     if (!user) {
       throw new NotFoundException("User not found");
     }
@@ -96,7 +99,9 @@ export class AuthService {
   }
 
   async updateProfile(actor: AccessTokenPayload, dto: UpdateProfileDto): Promise<MeDto> {
-    const existing = await this.db.query.users.findFirst({ where: eq(users.id, actor.sub) });
+    const existing = await this.db.query.users.findFirst({
+      where: and(eq(users.id, actor.sub), isNull(users.deletedAt)),
+    });
     if (!existing) {
       throw new NotFoundException("User not found");
     }
@@ -107,10 +112,17 @@ export class AuthService {
         ...(dto.name !== undefined ? { name: dto.name.trim() || null } : {}),
         ...(dto.avatarUrl !== undefined ? { avatarUrl: dto.avatarUrl || null } : {}),
       })
-      .where(eq(users.id, actor.sub))
+      .where(and(eq(users.id, actor.sub), isNull(users.deletedAt)))
       .returning();
 
     return toMe(updated);
+  }
+
+  async deleteMe(actor: AccessTokenPayload): Promise<void> {
+    const ok = await softDeleteUser(this.db, actor.sub);
+    if (!ok) {
+      throw new NotFoundException("User not found");
+    }
   }
 
   private async issueTokens(user: User): Promise<IssuedTokens> {

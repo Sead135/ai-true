@@ -59,6 +59,11 @@ export function EditModalsProvider({ children }: EditModalsProviderProps) {
     [me.role, clientCompanyId],
   );
 
+  const refreshBranches = () => {
+    void qc.invalidateQueries({ queryKey: qk.branches.all });
+    void qc.invalidateQueries({ queryKey: qk.stats.all });
+  };
+
   return (
     <EditModalsCtx.Provider value={api}>
       {children}
@@ -71,29 +76,37 @@ export function EditModalsProvider({ children }: EditModalsProviderProps) {
           }
           void qc.invalidateQueries({ queryKey: qk.companies.all });
         }}
+        onDeleted={() => {
+          if (me.role === "client") {
+            qc.setQueryData(qk.companies.mine, null);
+          }
+          void qc.invalidateQueries({ queryKey: qk.companies.all });
+          refreshBranches();
+        }}
       />
       <BranchEditModal
         target={branchTarget}
         companyId={me.role === "client" ? clientCompanyId : undefined}
         onClose={() => setBranchTarget(null)}
-        onSaved={() => {
-          void qc.invalidateQueries({ queryKey: qk.branches.all });
-          void qc.invalidateQueries({ queryKey: qk.stats.all });
-        }}
+        onSaved={refreshBranches}
+        onDeleted={refreshBranches}
       />
       {me.role === "admin" ? (
         <UserEditModal
           userId={userId}
           onClose={() => setUserId(null)}
           onSaved={() => void qc.invalidateQueries({ queryKey: qk.users.all })}
-          onDeleted={() => void qc.invalidateQueries({ queryKey: qk.users.all })}
+          onDeleted={() => {
+            void qc.invalidateQueries({ queryKey: qk.users.all });
+            void qc.invalidateQueries({ queryKey: qk.companies.all });
+            refreshBranches();
+          }}
         />
       ) : (
         <OnboardingWizard
           onDone={() => {
             void qc.invalidateQueries({ queryKey: qk.companies.all });
-            void qc.invalidateQueries({ queryKey: qk.branches.all });
-            void qc.invalidateQueries({ queryKey: qk.stats.all });
+            refreshBranches();
           }}
         />
       )}

@@ -1,9 +1,22 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
@@ -61,5 +74,15 @@ export class CompaniesController {
     @Body() body: UpdateCompanyDto,
   ): Promise<CompanyDto> {
     return this.companies.update(req.user, id, body);
+  }
+
+  @Delete(":id")
+  @Roles("admin", "client")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse()
+  @ApiForbiddenResponse({ description: "Company is outside your scope" })
+  @ApiNotFoundResponse({ description: "Company not found" })
+  async remove(@Req() req: AuthenticatedRequest, @Param("id") id: string): Promise<void> {
+    await this.companies.remove(req.user, id);
   }
 }

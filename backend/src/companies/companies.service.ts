@@ -5,12 +5,13 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull, or, type SQL } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types.js";
 import { DRIZZLE } from "../database/database.module.js";
 import type { createDb } from "../database/db.js";
 import { requireUser } from "../database/require-user.js";
 import { companies, users, type Company } from "../database/schema/index.js";
+import { softDeleteCompanyCascade } from "../database/soft-delete.js";
 import type { CompaniesPageDto } from "./dto/company.dto.js";
 import type { CreateCompanyDto } from "./dto/create-company.dto.js";
 import type { ListCompaniesQueryDto } from "./dto/list-companies.query.dto.js";
@@ -59,7 +60,7 @@ export class CompaniesService {
     const limit = query.limit ?? 10;
     const offset = (page - 1) * limit;
 
-    const conditions: SQL[] = [];
+    const conditions: SQL[] = [isNull(companies.deletedAt)];
     if (actor.role !== "admin") {
       const user = await requireUser(this.db, actor.sub);
       if (!user.companyId) {
@@ -85,7 +86,7 @@ export class CompaniesService {
       conditions.push(ilike(companies.city, city));
     }
 
-    const where = conditions.length ? and(...conditions) : undefined;
+    const where = and(...conditions);
 
     const [[{ total }], items] = await Promise.all([
       this.db.select({ total: count() }).from(companies).where(where),
@@ -105,7 +106,7 @@ export class CompaniesService {
     const [company] = await this.db
       .select()
       .from(companies)
-      .where(eq(companies.id, companyId))
+      .where(and(eq(companies.id, companyId), isNull(companies.deletedAt)))
       .limit(1);
 
     if (!company) {
@@ -140,12 +141,17 @@ export class CompaniesService {
     const [updated] = await this.db
       .update(companies)
       .set(patch)
-      .where(eq(companies.id, companyId))
+      .where(and(eq(companies.id, companyId), isNull(companies.deletedAt)))
       .returning();
 
     if (!updated) {
       throw new NotFoundException("Company not found");
     }
     return updated;
+  }
+
+  async remove(actor: AccessTokenPayload, companyId: string): Promise<void> {
+    await this.getForActor(actor, companyId);
+    await softDeleteCompanyCascade(this.db, companyId);
   }
 }

@@ -5,13 +5,14 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull, or, type SQL } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types.js";
 import { CompaniesService } from "../companies/companies.service.js";
 import { DRIZZLE } from "../database/database.module.js";
 import type { createDb } from "../database/db.js";
 import { requireUser } from "../database/require-user.js";
 import { branches, type Branch } from "../database/schema/index.js";
+import { softDeleteBranch } from "../database/soft-delete.js";
 import type { BranchesPageDto } from "./dto/branch.dto.js";
 import type { CreateBranchDto } from "./dto/create-branch.dto.js";
 import type { ListBranchesQueryDto } from "./dto/list-branches.query.dto.js";
@@ -68,7 +69,7 @@ export class BranchesService {
     const limit = query.limit ?? 10;
     const offset = (page - 1) * limit;
 
-    const conditions: SQL[] = [];
+    const conditions: SQL[] = [isNull(branches.deletedAt)];
     if (actor.role !== "admin") {
       const user = await requireUser(this.db, actor.sub);
       if (!user.companyId) {
@@ -102,7 +103,7 @@ export class BranchesService {
       conditions.push(eq(branches.isActive, false));
     }
 
-    const where = conditions.length ? and(...conditions) : undefined;
+    const where = and(...conditions);
 
     const [[{ total }], items] = await Promise.all([
       this.db.select({ total: count() }).from(branches).where(where),
@@ -134,7 +135,7 @@ export class BranchesService {
         ...(dto.businessCategory !== undefined ? { businessCategory: dto.businessCategory } : {}),
         ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
       })
-      .where(eq(branches.id, branchId))
+      .where(and(eq(branches.id, branchId), isNull(branches.deletedAt)))
       .returning();
 
     if (!branch) {
@@ -143,11 +144,16 @@ export class BranchesService {
     return branch;
   }
 
+  async remove(actor: AccessTokenPayload, branchId: string): Promise<void> {
+    await this.getForActor(actor, branchId);
+    await softDeleteBranch(this.db, branchId);
+  }
+
   async getForActor(actor: AccessTokenPayload, branchId: string): Promise<Branch> {
     const [branch] = await this.db
       .select()
       .from(branches)
-      .where(eq(branches.id, branchId))
+      .where(and(eq(branches.id, branchId), isNull(branches.deletedAt)))
       .limit(1);
 
     if (!branch) {
@@ -174,7 +180,10 @@ export class BranchesService {
     }
 
     if (actor.role === "admin") {
-      const rows = await this.db.select({ id: branches.id }).from(branches);
+      const rows = await this.db
+        .select({ id: branches.id })
+        .from(branches)
+        .where(isNull(branches.deletedAt));
       return rows.map((r) => r.id);
     }
 
@@ -185,7 +194,7 @@ export class BranchesService {
     const rows = await this.db
       .select({ id: branches.id })
       .from(branches)
-      .where(eq(branches.companyId, user.companyId));
+      .where(and(eq(branches.companyId, user.companyId), isNull(branches.deletedAt)));
     return rows.map((r) => r.id);
   }
 }

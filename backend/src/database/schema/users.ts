@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").notNull(),
   companyId: uuid("company_id").references(() => companies.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 export type User = typeof users.$inferSelect;

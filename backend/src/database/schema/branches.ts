@@ -16,6 +16,7 @@ export const branches = pgTable("branches", {
   businessCategory: varchar("business_category", { length: 120 }).notNull(),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 export type Branch = typeof branches.$inferSelect;

@@ -80,3 +80,7 @@ export function updateBranch(id: string, body: Partial<BranchInput>) {
     body: JSON.stringify(body),
   });
 }
+
+export function deleteBranch(id: string) {
+  return api<void>(`/branches/${id}`, { method: "DELETE" });
+}

@@ -2,10 +2,12 @@
 
 import { Button, Chip, Modal, useOverlayState } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { logout, profileDisplayName } from "@/lib/auth";
+import { deleteAccount, logout, profileDisplayName } from "@/lib/auth";
 import { useModalSize } from "@/lib/use-is-mobile";
 import { AccountAvatarModal, AvatarFace } from "./account-avatar-modal";
 import { AccountNameModal } from "./account-name-modal";
+import { ConfirmModal } from "./confirm-modal";
+import { IconTrash } from "./filter-icons";
 import { useSession } from "./session-context";
 import { UploadIcon } from "./upload-icon";
 
@@ -41,6 +43,7 @@ export function AccountMenu({ collapsed = false }: AccountMenuProps) {
   const settings = useOverlayState();
   const avatarModal = useOverlayState();
   const nameModal = useOverlayState();
+  const confirmDelete = useOverlayState();
 
   async function onLogout() {
     await logout();
@@ -83,7 +86,7 @@ export function AccountMenu({ collapsed = false }: AccountMenuProps) {
           {trigger}
         </div>
 
-        <Modal.Backdrop isDismissable>
+        <Modal.Backdrop isDismissable={!confirmDelete.isOpen}>
           <Modal.Container size={size} placement="center" scroll="inside">
             <Modal.Dialog>
               <Modal.Header className="flex items-center gap-2">
@@ -149,10 +152,21 @@ export function AccountMenu({ collapsed = false }: AccountMenuProps) {
                 </div>
               </Modal.Body>
 
-              <Modal.Footer>
+              <Modal.Footer className="flex w-full flex-col gap-2">
                 <Button variant="secondary" className="w-full" onPress={onLogout}>
                   Выйти
                 </Button>
+                {me.role === "client" ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="btn-danger-plain w-full"
+                    onPress={() => confirmDelete.setOpen(true)}
+                  >
+                    <IconTrash />
+                    Удалить аккаунт
+                  </Button>
+                ) : null}
               </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
@@ -161,6 +175,18 @@ export function AccountMenu({ collapsed = false }: AccountMenuProps) {
 
       <AccountAvatarModal state={avatarModal} me={me} size={size} onProfileUpdated={setMe} />
       <AccountNameModal state={nameModal} me={me} size={size} onProfileUpdated={setMe} />
+      <ConfirmModal
+        state={confirmDelete}
+        title="Удалить аккаунт?"
+        message="Точно удалить аккаунт? Вместе с ним будут удалены компания и филиалы."
+        confirmLabel="Удалить аккаунт"
+        onConfirm={async () => {
+          await deleteAccount();
+          settings.setOpen(false);
+          router.replace("/login");
+          router.refresh();
+        }}
+      />
     </>
   );
 }

@@ -6,11 +6,12 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { hash } from "bcrypt";
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull, or, type SQL } from "drizzle-orm";
 import type { AccessTokenPayload } from "../auth/auth.types.js";
 import { DRIZZLE } from "../database/database.module.js";
 import type { createDb } from "../database/db.js";
 import { companies, users } from "../database/schema/index.js";
+import { softDeleteUser } from "../database/soft-delete.js";
 import type { ListUsersQueryDto } from "./dto/list-users.query.dto.js";
 import type { UpdateUserDto } from "./dto/update-user.dto.js";
 import type { UserDto, UsersPageDto } from "./dto/user.dto.js";
@@ -72,7 +73,7 @@ export class UsersService {
       })
       .from(users)
       .leftJoin(companies, eq(users.companyId, companies.id))
-      .where(eq(users.id, id))
+      .where(and(eq(users.id, id), isNull(users.deletedAt)))
       .limit(1);
 
     if (!row) {
@@ -82,13 +83,17 @@ export class UsersService {
   }
 
   async update(actor: AccessTokenPayload, id: string, dto: UpdateUserDto): Promise<UserDto> {
-    const existing = await this.db.query.users.findFirst({ where: eq(users.id, id) });
+    const existing = await this.db.query.users.findFirst({
+      where: and(eq(users.id, id), isNull(users.deletedAt)),
+    });
     if (!existing) {
       throw new NotFoundException("User not found");
     }
 
     if (dto.email && dto.email !== existing.email) {
-      const clash = await this.db.query.users.findFirst({ where: eq(users.email, dto.email) });
+      const clash = await this.db.query.users.findFirst({
+        where: and(eq(users.email, dto.email), isNull(users.deletedAt)),
+      });
       if (clash) {
         throw new ConflictException("Email already registered");
       }
@@ -98,7 +103,7 @@ export class UsersService {
       const [company] = await this.db
         .select({ id: companies.id })
         .from(companies)
-        .where(eq(companies.id, dto.companyId))
+        .where(and(eq(companies.id, dto.companyId), isNull(companies.deletedAt)))
         .limit(1);
       if (!company) {
         throw new NotFoundException("Company not found");
@@ -129,14 +134,14 @@ export class UsersService {
     if (actor.sub === id) {
       throw new ForbiddenException("Cannot delete yourself");
     }
-    const deleted = await this.db.delete(users).where(eq(users.id, id)).returning({ id: users.id });
-    if (deleted.length === 0) {
+    const ok = await softDeleteUser(this.db, id);
+    if (!ok) {
       throw new NotFoundException("User not found");
     }
   }
 
   private listWhere(query: ListUsersQueryDto): SQL | undefined {
-    const conditions: SQL[] = [];
+    const conditions: SQL[] = [isNull(users.deletedAt)];
 
     const term = query.q?.trim();
     if (term) {
@@ -152,7 +157,7 @@ export class UsersService {
       conditions.push(eq(users.companyId, query.companyId));
     }
 
-    return conditions.length ? and(...conditions) : undefined;
+    return and(...conditions);
   }
 }
 

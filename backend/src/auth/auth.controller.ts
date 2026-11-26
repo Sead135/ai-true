@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -15,6 +16,7 @@ import {
   ApiConflictResponse,
   ApiCookieAuth,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
@@ -115,6 +117,20 @@ export class AuthController {
   @ApiOkResponse({ type: MeDto })
   updateProfile(@Req() req: AuthenticatedRequest, @Body() body: UpdateProfileDto): Promise<MeDto> {
     return this.auth.updateProfile(req.user, body);
+  }
+
+  @Delete("me")
+  @Roles("client")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  @ApiCookieAuth("access_token")
+  @ApiNoContentResponse()
+  async deleteMe(
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    await this.auth.deleteMe(req.user);
+    clearAuthCookies(res);
   }
 }
 

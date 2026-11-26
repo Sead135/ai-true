@@ -79,6 +79,10 @@ export async function logout(): Promise<void> {
   });
 }
 
+export async function deleteAccount(): Promise<void> {
+  await api<void>("/auth/me", { method: "DELETE" });
+}
+
 export function profileDisplayName(me: Pick<Me, "name" | "email">): string {
   if (me.name?.trim()) {
     return me.name.trim();
